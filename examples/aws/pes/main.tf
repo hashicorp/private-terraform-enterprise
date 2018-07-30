@@ -132,6 +132,7 @@ resource "aws_elb" "ptfe" {
         instance_protocol = "https"
         lb_port = 443
         lb_protocol = "https"
+        ssl_certificate_id = "${var.ssl_certificate_id}"
     }
 
     health_check {

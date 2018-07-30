@@ -26,3 +26,7 @@ variable "ttl" {
   description = "EC2 instance TTL"
   default     = "168"
 }
+
+variable "ssl_certificate_id" {
+  description = "ARN of an SSL certificate uploaded to AWS IAM for use with PTFE ELB"
+}

@@ -90,4 +90,5 @@ module "pes" {
   db_subnet_group_name   = "${module.network.db_subnet_group_id}"
   owner                  = "${var.owner}"
   ttl                    = "${var.ttl}"
+  ssl_certificate_id     = "${var.ssl_certificate_id}"
 }

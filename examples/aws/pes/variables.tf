@@ -14,3 +14,4 @@ variable "vpc_security_group_ids" {}
 variable "hashidemos_zone_id" {}
 variable "database_pwd" {}
 variable "db_subnet_group_name" {}
+variable "ssl_certificate_id" {}
