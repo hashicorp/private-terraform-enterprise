@@ -122,6 +122,7 @@ resource "aws_iam_role_policy" "ptfe" {
 // Launch an ELB to run in front of the primary and standby PTFE servers.
 resource "aws_elb" "ptfe" {
     name = "${local.namespace}-elb"
+    instances = ["${aws_instance.pes.0.id}"]
     connection_draining = true
     connection_draining_timeout = 400
     subnets = ["${var.subnet_ids}"]
