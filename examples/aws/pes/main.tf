@@ -118,3 +118,27 @@ resource "aws_iam_role_policy" "ptfe" {
   role   = "${aws_iam_role.ptfe.name}"
   policy = "${data.aws_iam_policy_document.ptfe.json}"
 }
+
+// Launch an ELB to run in front of the primary and standby PTFE servers.
+resource "aws_elb" "ptfe" {
+    name = "${local.namespace}-elb"
+    connection_draining = true
+    connection_draining_timeout = 400
+    subnets = ["${var.subnet_ids}"]
+    security_groups = ["${var.vpc_security_group_ids}"]
+
+    listener {
+        instance_port = 443
+        instance_protocol = "https"
+        lb_port = 443
+        lb_protocol = "https"
+    }
+
+    health_check {
+        healthy_threshold = 2
+        unhealthy_threshold = 3
+        timeout = 5
+        target = "HTTPS:443/app"
+        interval = 15
+    }
+}
