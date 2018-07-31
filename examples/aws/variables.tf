@@ -28,5 +28,7 @@ variable "ttl" {
 }
 
 variable "ssl_certificate_id" {
-  description = "ARN of an SSL certificate uploaded to AWS IAM for use with PTFE ELB"
+  # While the doc for the aws_elb resource mentions specifying an SSL certificate uploaded to AWS IAM,
+  # I believe it really means AWS Certificate Manager
+  description = "ARN of an SSL certificate uploaded to AWS Certificate Manager for use with PTFE ELB"
 }
