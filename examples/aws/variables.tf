@@ -32,3 +32,8 @@ variable "ssl_certificate_id" {
   # I believe it really means AWS Certificate Manager
   description = "ARN of an SSL certificate uploaded to AWS Certificate Manager for use with PTFE ELB"
 }
+
+variable "route53_zone" {
+  description = "name of Route53 zone to use"
+  default = "hashidemos.io"
+}

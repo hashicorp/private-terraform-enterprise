@@ -7,7 +7,7 @@ provider "aws" {
 }
 
 data "aws_route53_zone" "hashidemos" {
-  name = "hashidemos.io."
+  name = "${var.route53_zone}"
 }
 
 #------------------------------------------------------------------------------
