@@ -28,9 +28,7 @@ variable "ttl" {
 }
 
 variable "ssl_certificate_id" {
-  # While the doc for the aws_elb resource mentions specifying an SSL certificate uploaded to AWS IAM,
-  # I believe it really means AWS Certificate Manager
-  description = "ARN of an SSL certificate uploaded to AWS Certificate Manager for use with PTFE ELB"
+  description = "ARN of an SSL certificate uploaded to IAM or AWS Certificate Manager for use with PTFE ELB"
 }
 
 variable "route53_zone" {
