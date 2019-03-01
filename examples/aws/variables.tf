@@ -26,3 +26,7 @@ variable "ttl" {
   description = "EC2 instance TTL"
   default     = "168"
 }
+
+variable "dns_zone" {
+  default = "hashidemos.io"
+}

@@ -7,7 +7,7 @@ provider "aws" {
 }
 
 data "aws_route53_zone" "hashidemos" {
-  name = "hashidemos.io."
+  name = "${var.dns_zone}."
 }
 
 #------------------------------------------------------------------------------
@@ -22,8 +22,13 @@ data "template_file" "user_data" {
   template = "${file("${path.module}/user-data.tpl")}"
 
   vars {
-    hostname       = "${var.namespace}.hashidemos.io"
-    replicated_pwd = "${random_pet.replicated-pwd.id}"
+    hostname         = "${var.namespace}.hashidemos.io"
+    replicated_pwd   = "${random_pet.replicated-pwd.id}"
+    pg_password      = "<postgres_password>"
+    s3_region        = "eu-west-1"
+    s3_bucket        = "<s3_bucket_name>"
+    pg_netloc        = "${module.pes.endpoint}"
+    console_password = "<console_password>"
   }
 }
 
@@ -34,6 +39,20 @@ data "template_file" "user_data" {
 module "network" {
   source    = "network/"
   namespace = "${var.namespace}"
+}
+
+#------------------------------------------------------------------------------
+# alb
+#------------------------------------------------------------------------------
+
+module "alb" {
+  source       = "alb/"
+  namespace    = "${var.namespace}"
+  vpc_id       = "${module.network.vpc_id}"
+  instance_ids = "${module.pes.instance_ids}"
+  dns_zone     = "${var.dns_zone}"
+  subnet_ids   = "${module.network.subnet_ids}"
+  sg_ids       = "${module.network.security_group_id}"
 }
 
 #------------------------------------------------------------------------------
@@ -79,11 +98,12 @@ module "pmd" {
 module "pes" {
   source                 = "pes/"
   namespace              = "${var.namespace}"
+  aws_instance_count     = "1"
   aws_instance_ami       = "${var.aws_instance_ami}"
   aws_instance_type      = "${var.aws_instance_type}"
   subnet_ids             = "${module.network.subnet_ids}"
   vpc_security_group_ids = "${module.network.security_group_id}"
-  user_data              = ""
+  user_data              = "${data.template_file.user_data.rendered}"
   ssh_key_name           = "${var.ssh_key_name}"
   hashidemos_zone_id     = "${data.aws_route53_zone.hashidemos.zone_id}"
   database_pwd           = "${random_pet.replicated-pwd.id}"
