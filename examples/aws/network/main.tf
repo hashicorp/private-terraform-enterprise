@@ -49,12 +49,6 @@ resource "aws_subnet" "main" {
   map_public_ip_on_launch = true
 }
 
-resource "aws_db_subnet_group" "main" {
-  name_prefix = "${var.namespace}"
-  description = "${var.namespace}-db_subnet_group"
-  subnet_ids  = ["${aws_subnet.main.*.id}"]
-}
-
 resource "aws_route_table_association" "main" {
   count          = 2
   route_table_id = "${aws_route_table.main.id}"

@@ -1,0 +1,9 @@
+*.cert
+*.key
+*.txt
+*.tfstate
+*.tfstate.*
+*DS_Store
+*.auto.tfvars
+*.rli
+.terraform
