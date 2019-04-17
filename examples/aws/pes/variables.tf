@@ -5,13 +5,15 @@ variable "ssh_key_name" {}
 variable "owner" {}
 variable "ttl" {}
 variable "user_data" {}
+variable "vpc_id" {}
 variable "subnet_ids" {
   type = "list"
 }
 variable "vpc_security_group_ids" {}
-variable "hashidemos_zone_id" {}
-variable "database_name" {}
-variable "database_username" {}
-variable "database_pwd" {}
-variable "ssl_certificate_id" {}
+variable "zone_id" {}
+variable "alb_internal" {}
+variable "hostname" {}
+variable "ssl_certificate_arn" {}
+variable "ptfe_bucket_name" {}
+variable "kms_key_id" {}
 variable "source_bucket_id" {}

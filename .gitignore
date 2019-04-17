@@ -5,6 +5,5 @@
 .terraform
 *.tfstate
 *.tfstate.backup
-*.auto.tfvars
 *.txt
 

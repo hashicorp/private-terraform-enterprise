@@ -1,3 +1,11 @@
+terraform {
+  required_version = ">= 0.11.13"
+}
+
+provider "aws" {
+  region = "${var.aws_region}"
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -15,7 +23,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = "${aws_vpc.main.id}"
 
   tags {
-    Name = "${var.namespace}-internet_gateway"
+    Name = "${var.namespace}-internet-gateway"
   }
 }
 
@@ -28,7 +36,7 @@ resource "aws_route_table" "main" {
   }
 
   tags {
-    Name = "${var.namespace}-route_table"
+    Name = "${var.namespace}-route-table"
   }
 }
 
