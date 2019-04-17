@@ -24,7 +24,7 @@ You need to have the following things before running the first stage Terraform c
 
 You need to have the following things before running the second stage Terraform code in the [aws](./examples/aws) directory of this repository:
 * an AWS account
-An AWS KMS key in that account (which is used to encrypt/decrypt the contents of both S3 buckets)
+* An AWS KMS key in that account (which is used to encrypt/decrypt the contents of both S3 buckets)
 * a VPC like the one provisioned in stage 1
 * two subnets in that VPC like the ones provisioned in stage 1
 * a security group like the one provisioned in stage 1
