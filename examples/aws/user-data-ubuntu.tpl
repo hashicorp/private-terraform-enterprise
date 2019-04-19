@@ -5,6 +5,7 @@ exec > /home/ubuntu/install-ptfe.log 2>&1
 
 # Get private and public IPs of the EC2 instance
 PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+PRIVATE_DNS=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
 PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
 
 # Write out replicated.conf configuration file
@@ -13,17 +14,17 @@ cat > /etc/replicated.conf <<EOF
   "DaemonAuthenticationType": "password",
   "DaemonAuthenticationPassword": "${ptfe_admin_password}",
   "TlsBootstrapType": "self-signed",
-  "ImportSettingsFrom": "/tmp/ptfe-settings.json",
-  "LicenseFileLocation": "/tmp/ptfe-license.rli",
+  "ImportSettingsFrom": "/home/ubuntu/ptfe-settings.json",
+  "LicenseFileLocation": "/home/ubuntu/ptfe-license.rli",
   "BypassPreflightChecks": true
 }
 EOF
 
 # Write out PTFE settings file
-cat > /tmp/ptfe-settings.json <<EOF
+cat > /home/ubuntu/ptfe-settings.json <<EOF
 {
   "hostname": {
-    "value": "$PUBLIC_IP"
+    "value": "${hostname}"
   },
   "ca_certs": {
     "value": "${ca_certs}"
@@ -47,7 +48,7 @@ cat > /tmp/ptfe-settings.json <<EOF
     "value": "${enable_metrics_collection}"
   },
   "extra_no_proxy": {
-    "value": "${extra_no_proxy}"
+    "value": "${extra_no_proxy},$PRIVATE_DNS"
   },
   "pg_dbname": {
     "value": "${pg_dbname}"
@@ -91,22 +92,25 @@ cat > /tmp/ptfe-settings.json <<EOF
 }
 EOF
 
-# Get License File from S3 bucket
+# Install the aws CLI
 apt-get -y update
 apt-get install -y awscli
 aws configure set s3.signature_version s3v4
-aws s3 cp s3://${source_bucket_name}/${ptfe_license} /tmp/ptfe-license.rli
+
+# Get License File from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ubuntu/ptfe-license.rli
 
 # Set SELinux to permissive
 apt install -y selinux-utils
 setenforce 0
 
 # Disable ufw
-ufw allow in on docker0
+#ufw allow in on docker0
 
-# Create database schemas
+# Install psql slcient for connecting to PostgreSQL
 apt-get install -y postgresql-client
 
+# Create the PTFE database schemas
 cat > /home/ubuntu/create_schemas.sql <<EOF
 CREATE SCHEMA IF NOT EXISTS rails;
 CREATE SCHEMA IF NOT EXISTS vault;
@@ -125,4 +129,46 @@ bash /home/ubuntu/install.sh \
   private-address=$PRIVATE_IP\
   public-address=$PUBLIC_IP
 
+# Allow ubuntu user to use docker
+# This will not take effect until after you logout and back in
 usermod -aG docker ubuntu
+
+while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
+    sleep 15
+done
+
+# Create initial admin user and organization
+# if they don't exist yet
+if [ "${create_first_user_and_org}" == "true" ]
+then
+  echo "Creating initial admin user and organization"
+  cat > /home/ec2-user/initialuser.json <<EOF
+{
+  "username": "${initial_admin_username}",
+  "email": "${initial_admin_email}",
+  "password": "${initial_admin_password}"
+}
+EOF
+
+  initial_token=$(replicated admin --tty=0 retrieve-iact)
+  iact_result=$(curl --header "Content-Type: application/json" --request POST --data @/home/ec2-user/initialuser.json https://${hostname}/admin/initial-admin-user?token=$${initial_token})
+  api_token=$(echo $iact_result | python -c "import sys, json; print(json.load(sys.stdin)['token'])")
+  echo "API Token of initial admin user is: $api_token"
+
+  # Create first PTFE organization
+  cat > /home/ec2-user/initialorg.json <<EOF
+{
+  "data": {
+    "type": "organizations",
+    "attributes": {
+      "name": "${initial_org_name}",
+      "email": "${initial_org_email}"
+    }
+  }
+}
+EOF
+
+  org_result=$(curl  --header "Authorization: Bearer $api_token" --header "Content-Type: application/vnd.api+json" --request POST --data @/home/ec2-user/initialorg.json https://${hostname}/api/v2/organizations)
+  org_id=$(echo $org_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
+
+fi

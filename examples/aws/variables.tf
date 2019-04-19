@@ -3,6 +3,7 @@ variable "aws_region" {
 }
 
 variable "aws_instance_ami" {
+  # ami-759bc50a for Ubuntu, ami-6871a115 for RHEL
   description = "Amazon Machine Image ID"
 }
 
@@ -54,12 +55,11 @@ variable "ttl" {
   default     = "-1"
 }
 
-variable "source_bucket_name" {
-  description = "Name of the S3 source bucket containing PTFE license file, airgap bundle, replicated tar file, and settings files"
-}
-
-variable "ptfe_license" {
-  description = "key of license file within the source S3 bucket"
+variable "linux" {
+  # Be sure to set aws_instance_ami variable above
+  # to and actual Ubuntu or RHEL AMI
+  description = "ubuntu or rhel"
+  default = "ubuntu"
 }
 
 ### Variables for user_data script that installs PTFE
@@ -107,7 +107,6 @@ variable "enable_metrics_collection" {
   default = "true"
 }
 
-###
 variable "extra_no_proxy" {
   description = "a comma separated list of hosts to exclude from proxying"
   default = ""
@@ -167,4 +166,53 @@ variable "vault_path" {
 variable "vault_store_snapshot" {
   description = "whether vault files should be stored in snapshots"
   default = "1"
+}
+
+variable "source_bucket_name" {
+  description = "Name of the S3 source bucket containing PTFE license file, airgap bundle, replicated tar file, and settings files"
+}
+
+variable "ptfe_license" {
+  description = "key of license file within the source S3 bucket"
+}
+
+variable "airgapped" {
+  # Set to "true" or "false"
+  description = "whether installation is online or airgapped"
+  default = "false"
+}
+
+variable "airgap_bundle" {
+  description = "S3 bucket object container airgap bundle"
+  default = ""
+}
+
+variable "replicated_bootstrapper" {
+  description = "S3 bucket object containing replicated bootstrapper replicated.tar.gz"
+  default = ""
+}
+
+variable "create_first_user_and_org" {
+  # set to "true" for first install and "false" after that
+  description = "whether to create the first site admin and org"
+}
+
+variable "initial_admin_username" {
+  description = "username of initial site admin user in PTFE"
+}
+
+variable "initial_admin_email" {
+  description = "email of initial site admin user in PTFE"
+}
+
+variable "initial_admin_password" {
+  description = "username of initial site admin user in PTFE"
+}
+
+variable "initial_org_name" {
+  description = "name of initial organization in PTFE"
+}
+
+variable "initial_org_email" {
+  description = "email of initial organization in PTFE"
 }

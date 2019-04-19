@@ -57,16 +57,6 @@ resource "aws_instance" "secondary" {
 
 ### Routing resources
 
-resource "aws_eip" "pes" {
-  instance = "${aws_instance.primary.id}"
-  vpc      = true
-
-  tags {
-    Name  = "${var.namespace}-eip"
-    owner = "${var.owner}"
-  }
-}
-
 resource "aws_route53_record" "pes" {
   zone_id = "${var.zone_id}"
   name    = "${var.hostname}"
@@ -97,12 +87,12 @@ resource "aws_lb_target_group" "ptfe_443" {
   port               = 443
   protocol           = "HTTPS"
   vpc_id             = "${var.vpc_id}"
-  target_type        = "ip"
+  target_type        = "instance"
 
   health_check {
     path      = "/app"
     protocol  = "HTTPS"
-    matcher   = "200-499"
+    matcher   = "200"
   }
 
   tags {
@@ -115,12 +105,12 @@ resource "aws_lb_target_group" "ptfe_8800" {
   port               = 8800
   protocol           = "HTTPS"
   vpc_id             = "${var.vpc_id}"
-  target_type        = "ip"
+  target_type        = "instance"
 
   health_check {
   path      = "/"
   protocol  = "HTTPS"
-  matcher   = "200-499"
+  matcher   = "200"
   }
 
   tags {
@@ -158,13 +148,13 @@ resource "aws_lb_listener" "ptfe-8800" {
 
 resource "aws_lb_target_group_attachment" "ptfe_443" {
   target_group_arn    = "${aws_lb_target_group.ptfe_443.arn}"
-  target_id           = "${aws_eip.pes.private_ip}"
+  target_id           = "${aws_instance.primary.id}"
   port                = 443
 }
 
 resource "aws_lb_target_group_attachment" "ptfe_8800" {
   target_group_arn    = "${aws_lb_target_group.ptfe_8800.arn}"
-  target_id           = "${aws_eip.pes.private_ip}"
+  target_id           = "${aws_instance.primary.id}"
   port                = 8800
 }
 
@@ -175,8 +165,9 @@ data "aws_kms_key" "s3" {
 }
 
 resource "aws_s3_bucket" "pes" {
-  bucket = "${var.ptfe_bucket_name}"
-  acl    = "private"
+  bucket        = "${var.ptfe_bucket_name}"
+  acl           = "private"
+  force_destroy = true
 
   versioning {
     enabled = true

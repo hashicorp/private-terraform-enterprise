@@ -1,5 +1,5 @@
 # Automated Installation of PTFE with External Services in AWS
-This branch contains Terraform configurations that can do an [automated installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS.
+This branch contains Terraform configurations that can do an [automated installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu or RHEL.
 
 ## Explanation of the Two Stage Deployment Model
 It does this in two stages, each of which uses the open source flavor of Terraform:
@@ -13,9 +13,23 @@ There are two reasons for splitting the deployment into two stages:
 1. The second reason is that some users want to be able to "repave" their PTFE instances periodically, meaning that they will destroy the instances and recreate them (possibly with a new AMI). These users need to create the PTFE source bucket and then place the PTFE software, license file, and possibly settings files in it before they run the Terraform code in the second stage.
 
 ## Description of the User Data Script that Installs PTFE
-During the second stage, a user data script is also run on each instance to install PTFE on it and to initialize the PostgreSQL database and S3 bucket if that has not already been done. The user data script is templated so that all relevant PTFE settings, whether entered in the terraform.tfvars file or computed by Terraform, are passed into it before it is run when the instances are deployed. The script writes out the replicated.conf and ptfe-settings.json files, installs the AWS CLI and uses it to retrieve the PTFE license file and software from the PTFE source bucket, configures SELinux to run in permissive mode, installs the psql utility, connects to the PostgreSQL database and creates the three required schemas needed by PTFE, and then finally runs the PTFE installer script. This automates the installation using the replicated.conf, ptfe-settings.json, and ptfe-license.rli files that it previously wrote to disk. Note that the PTFE installer script installs Docker on top of which PTFE runs.
+During the second stage, a user data script generated from a template (either [user-data-ubuntu.tpl](./examples/aws/user-data-ubuntu.tpl) or [user-data-rhel.tpl](./examples/aws/user-data-rhel.tpl)) is also run on each instance to install PTFE on it and to initialize the PostgreSQL database and S3 bucket if that has not already been done. Since the user data script is templated, all relevant PTFE settings, whether entered in the terraform.tfvars file or computed by Terraform, are passed into it before it is run when the instances are deployed.
 
-Note: Currently, we only get the PTFE license from the PTFE source bucket and do an [online](https://www.terraform.io/docs/enterprise/private/install-installer.html#run-the-installer-online) installation, but we will soon retrieve the other PTFE artifacts mentioned and do an [airgapped](https://www.terraform.io/docs/enterprise/private/install-installer.html#run-the-installer-airgapped) installation.
+The script does the following things:
+1. It determines the private IP, public IP, and private DNS of each EC2 instance being deployed to run PTFE.
+1. It writes out the replicated.conf and ptfe-settings.json files.
+1. It installs the aws CLI.
+1. It uses the aws CLI to retrieve the PTFE license file from the PTFE source bucket.
+1. On Ubuntu, it sets SELinux to permissive mode. (This is not required on RHEL.)
+1. It installs the psql utility, connects to the PostgreSQL database, and creates the three required schemas needed by PTFE.
+
+At this point, some different things happen depending on whether an online or airgapped installation is being done.
+* In an an [online](https://www.terraform.io/docs/enterprise/private/install-installer.html#run-the-installer-online) installation, the script downloads the PTFE installer using curl and then runs the installer which installs both Docker and PTFE.
+* In an [airgapped](https://www.terraform.io/docs/enterprise/private/install-installer.html#run-the-installer-airgapped) installation, the script downloads docker, the airgap bundle, and the replicated bootstrapper (replicated.tar.gz) from the PTFE source bucket, installs docker, and then runs the installer.
+
+In either case, the installer uses the replicated.conf, ptfe-settings.json, and ptfe-license.rli files that the script previously wrote to disk.
+
+Note: Currently, only the online installation is supported. We expect to support airgapped installations soon.
 
 ## Prerequisites
 You need to have the following things before running the first stage Terraform code in the [network](./examples/aws/network) directory of this repository:
@@ -33,13 +47,8 @@ You need to have the following things before running the second stage Terraform 
 * An AWS key pair that can be used to SSH to the EC2 instances that will be provisioned to run PTFE.
 * A certificate uploaded into or created within Amazon Certificate Manager (ACM) that can be attached to the application load balancer that will be provisioned in front of the EC2 instances.
 * An existing AWS Route 53 zone to host the Route 53 record set that will be provisioned.
-* Access to a PTFE license, PTFE airgap bundle, and replicated.tar.gz installer bootstrapper that you can upload to the PTFE source bucket.
+* Access to a PTFE license
+* Access to PTFE airgap bundle and replicated.tar.gz installer bootstrapper that you can upload to the PTFE source bucket (if doing an airgapped installation).
 
 ## A Comment About Certs
 The Terraform code in this branch of this repository uses self-signed certs generated by PTFE on the EC2 instances but expects you to provide your own cert that can be deployed to the application load balancer which it provisions. Ideally, that would be a cert signed by a public certificate authority to better support integration with version control systems. It is possible to use a cert signed by a private certificate authority, but you then need to make sure that your VCS system (if using one of our [supported VCS integrations](https://www.terraform.io/docs/enterprise/vcs/index.html)) trusts that certificate authority.
-
-## Supported Linux Flavors
-The Terraform code in this branch currently supports Ubuntu.
-
-## Legal Notice
-Please note, that this repository may contain a sample of a code, which is used for purposes of example only (“Example Code”) and which may be used in other documentation, guides and training materials. However, notwithstanding any agreement, HashiCorp disclaims any warranties and liabilities in respect to Example Code. You acknowledge that the Example Code is not part of any of HashiCorp product and is not supported by HashiCorp.  If you have questions or issues with deploying or configuring Terraform Enterprise in your environment, please submit a ticket through [Customer Support Center] (https://www.hashicorp.com/support) or contact your Technical Account Manager
