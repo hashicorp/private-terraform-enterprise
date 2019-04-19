@@ -176,10 +176,10 @@ variable "ptfe_license" {
   description = "key of license file within the source S3 bucket"
 }
 
-variable "airgapped" {
-  # Set to "true" or "false"
+variable "operational_mode" {
+  # Set to "online" or "airgapped"
   description = "whether installation is online or airgapped"
-  default = "false"
+  default = "online"
 }
 
 variable "airgap_bundle" {
@@ -190,6 +190,18 @@ variable "airgap_bundle" {
 variable "replicated_bootstrapper" {
   description = "S3 bucket object containing replicated bootstrapper replicated.tar.gz"
   default = ""
+}
+
+variable "docker_package" {
+  description = "S3 bucket object containing Docker"
+}
+
+variable "docker_cli_package" {
+  description = "S3 bucket object containing Docker CLI"
+}
+
+variable "containerd_package" {
+  description = "S3 bucket object containing containerd"
 }
 
 variable "create_first_user_and_org" {

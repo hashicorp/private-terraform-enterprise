@@ -16,7 +16,7 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/ubuntu/ptfe-settings.json",
   "LicenseFileLocation": "/home/ubuntu/ptfe-license.rli",
-  "BypassPreflightChecks": true
+  "BypassPreflightChecks": false
 }
 EOF
 
@@ -133,6 +133,7 @@ bash /home/ubuntu/install.sh \
 # This will not take effect until after you logout and back in
 usermod -aG docker ubuntu
 
+# Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
     sleep 15
 done

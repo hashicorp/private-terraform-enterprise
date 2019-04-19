@@ -16,7 +16,7 @@ data "aws_s3_bucket" "source" {
 
 # user_data script that will install PTFE
 data "template_file" "user_data" {
-  template = "${file("${path.module}/user-data-${var.linux}.tpl")}"
+  template = "${file("${path.module}/user-data-${var.linux}-${var.operational_mode}.tpl")}"
 
   vars {
     hostname                  = "${var.hostname}"
@@ -44,9 +44,12 @@ data "template_file" "user_data" {
     vault_store_snapshot      = "${var.vault_store_snapshot}"
     source_bucket_name        = "${var.source_bucket_name}"
     ptfe_license              = "${var.ptfe_license}"
-    airgapped                 = "${var.airgapped}"
+    operational_mode          = "${var.operational_mode}"
     airgap_bundle             = "${var.airgap_bundle}"
     replicated_bootstrapper   = "${var.replicated_bootstrapper}"
+    docker_package            = "${var.docker_package}"
+    docker_cli_package        = "${var.docker_cli_package}"
+    containerd_package        = "${var.containerd_package}"
     create_first_user_and_org = "${var.create_first_user_and_org}"
     initial_admin_username    = "${var.initial_admin_username}"
     initial_admin_email       = "${var.initial_admin_email}"

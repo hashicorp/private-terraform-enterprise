@@ -16,7 +16,8 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/ec2-user/ptfe-settings.json",
   "LicenseFileLocation": "/home/ec2-user/ptfe-license.rli",
-  "BypassPreflightChecks": true
+  "LicenseBootstrapAirgapPackagePath": "${airgap_bundle}",
+  "BypassPreflightChecks": false
 }
 EOF
 
@@ -130,6 +131,7 @@ bash /home/ec2-user/install.sh \
 # This will not take effect until after you logout and back in
 usermod -aG docker ec2-user
 
+# Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
     sleep 15
 done
