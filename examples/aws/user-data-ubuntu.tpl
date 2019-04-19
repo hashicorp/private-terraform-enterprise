@@ -142,7 +142,7 @@ done
 if [ "${create_first_user_and_org}" == "true" ]
 then
   echo "Creating initial admin user and organization"
-  cat > /home/ec2-user/initialuser.json <<EOF
+  cat > /home/ubuntu/initialuser.json <<EOF
 {
   "username": "${initial_admin_username}",
   "email": "${initial_admin_email}",
@@ -151,12 +151,12 @@ then
 EOF
 
   initial_token=$(replicated admin --tty=0 retrieve-iact)
-  iact_result=$(curl --header "Content-Type: application/json" --request POST --data @/home/ec2-user/initialuser.json https://${hostname}/admin/initial-admin-user?token=$${initial_token})
+  iact_result=$(curl --header "Content-Type: application/json" --request POST --data @/home/ubuntu/initialuser.json https://${hostname}/admin/initial-admin-user?token=$${initial_token})
   api_token=$(echo $iact_result | python -c "import sys, json; print(json.load(sys.stdin)['token'])")
   echo "API Token of initial admin user is: $api_token"
 
   # Create first PTFE organization
-  cat > /home/ec2-user/initialorg.json <<EOF
+  cat > /home/ubuntu/initialorg.json <<EOF
 {
   "data": {
     "type": "organizations",
@@ -168,7 +168,7 @@ EOF
 }
 EOF
 
-  org_result=$(curl  --header "Authorization: Bearer $api_token" --header "Content-Type: application/vnd.api+json" --request POST --data @/home/ec2-user/initialorg.json https://${hostname}/api/v2/organizations)
+  org_result=$(curl  --header "Authorization: Bearer $api_token" --header "Content-Type: application/vnd.api+json" --request POST --data @/home/ubuntu/initialorg.json https://${hostname}/api/v2/organizations)
   org_id=$(echo $org_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
 
 fi

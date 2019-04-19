@@ -1,6 +1,6 @@
 aws_region = "us-east-1"
 #aws_instance_ami = "ami-6871a115" # for RHEL
-aws_instance_ami = "ami-759bc50a" for Ubuntu
+aws_instance_ami = "ami-759bc50a"  # for Ubuntu
 aws_instance_type = "m5.large"
 namespace = ""
 ssh_key_name = ""
