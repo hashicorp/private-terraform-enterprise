@@ -152,7 +152,7 @@ EOF
 
   initial_token=$(replicated admin --tty=0 retrieve-iact)
   iact_result=$(curl --header "Content-Type: application/json" --request POST --data @/home/ubuntu/initialuser.json https://${hostname}/admin/initial-admin-user?token=$${initial_token})
-  api_token=$(echo $iact_result | python -c "import sys, json; print(json.load(sys.stdin)['token'])")
+  api_token=$(echo $iact_result | python3 -c "import sys, json; print(json.load(sys.stdin)['token'])")
   echo "API Token of initial admin user is: $api_token"
 
   # Create first PTFE organization
@@ -169,6 +169,6 @@ EOF
 EOF
 
   org_result=$(curl  --header "Authorization: Bearer $api_token" --header "Content-Type: application/vnd.api+json" --request POST --data @/home/ubuntu/initialorg.json https://${hostname}/api/v2/organizations)
-  org_id=$(echo $org_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
+  org_id=$(echo $org_result | python3 -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
 
 fi
