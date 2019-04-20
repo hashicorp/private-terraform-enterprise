@@ -16,7 +16,7 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/ubuntu/ptfe-settings.json",
   "LicenseFileLocation": "/home/ubuntu/ptfe-license.rli",
-  "LicenseBootstrapAirgapPackagePath": "${airgap_bundle}",
+  "LicenseBootstrapAirgapPackagePath": "/home/ubuntu/${airgap_bundle}",
   "BypassPreflightChecks": false
 }
 EOF
@@ -105,9 +105,6 @@ aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ubuntu/ptfe-license.r
 apt install -y selinux-utils
 setenforce 0
 
-# Disable ufw
-#ufw allow in on docker0
-
 # Install psql slcient for connecting to PostgreSQL
 apt-get install -y postgresql-client
 
@@ -128,14 +125,18 @@ aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/ubuntu/${contai
 # Install containerd
 DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${containerd_package}
 
+# Download libltdl7 package
+aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/ubuntu/${libltdl7_package}
+
+# Install libltdl7
+#apt-get install -y libltdl7
+DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${libltdl7_package}
+
 # Download Docker CLI Package from S3 bucket
 aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/ubuntu/${docker_cli_package}
 
 # Install Docker CLI
 DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${docker_cli_package}
-
-# Install libltdl7
-apt-get install -y libltdl7
 
 # Download Docker Package from S3 bucket
 aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ubuntu/${docker_package}
@@ -143,11 +144,19 @@ aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ubuntu/${docker_pac
 # Install Docker
 DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${docker_package}
 
+# Download the Airgap bundle
+aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ubuntu/${airgap_bundle}
+
+# Download and extract the Replicated Bootstrapper
+aws s3 cp s3://${source_bucket_name}/${replicated_bootstrapper} /home/ubuntu/${replicated_bootstrapper}
+mkdir /opt/ptfe-installer
+cp /home/ubuntu/${replicated_bootstrapper} /opt/ptfe-installer/.
+tar  xzf /opt/ptfe-installer/${replicated_bootstrapper} -C /opt/ptfe-installer
 
 # Install PTFE
-curl https://install.terraform.io/ptfe/stable > /home/ubuntu/install.sh
-
-bash /home/ubuntu/install.sh \
+cd /opt/ptfe-installer
+./install.sh \
+  airgap \
   no-proxy \
   private-address=$PRIVATE_IP\
   public-address=$PUBLIC_IP
@@ -162,7 +171,7 @@ while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
 done
 
 # Create initial admin user and organization
-# if they don't exist yet
+# if they do not exist yet
 if [ "${create_first_user_and_org}" == "true" ]
 then
   echo "Creating initial admin user and organization"

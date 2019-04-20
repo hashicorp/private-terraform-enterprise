@@ -16,7 +16,7 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/ec2-user/ptfe-settings.json",
   "LicenseFileLocation": "/home/ec2-user/ptfe-license.rli",
-  "LicenseBootstrapAirgapPackagePath": "${airgap_bundle}",
+  "LicenseBootstrapAirgapPackagePath": "/home/ec2-user/${airgap_bundle}",
   "BypassPreflightChecks": false
 }
 EOF
@@ -119,10 +119,53 @@ host=$(echo ${pg_netloc} | cut -d ":" -f 1)
 port=$(echo ${pg_netloc} | cut -d ":" -f 2)
 PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/ec2-user/create_schemas.sql
 
-# Install PTFE
-curl https://install.terraform.io/ptfe/stable > /home/ec2-user/install.sh
+# Download containerd Package from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/ec2-user/${containerd_package}
 
-bash /home/ec2-user/install.sh \
+# Install containerd
+rpm -ivh /home/ec2-user/${containerd_package}
+
+# Download libltdl7 package
+aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/ec2-user/${libltdl7_package}
+
+# Install libltdl7
+#apt-get install -y libltdl7
+rpm -ivh /home/ec2-user/${libltdl7_package}
+
+# Download Docker CLI Package from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/ec2-user/${docker_cli_package}
+
+# Install Docker CLI
+rpm -ivh /home/ec2-user/${docker_cli_package}
+
+# Download container-selinux Package from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${container_selinux_package} /home/ec2-user/${container_selinux_package}
+
+# Install container-selinux package
+rpm -ivh /home/ec2-user/${container_selinux_package}
+
+# Download Docker Package from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ec2-user/${docker_package}
+
+# Install Docker
+rpm -ivh /home/ec2-user/${docker_package}
+
+# Start Docker
+systemctl start docker
+
+# Download the Airgap bundle
+aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ec2-user/${airgap_bundle}
+
+# Download and extract the Replicated Bootstrapper
+aws s3 cp s3://${source_bucket_name}/${replicated_bootstrapper} /home/ec2-user/${replicated_bootstrapper}
+mkdir /opt/ptfe-installer
+cp /home/ec2-user/${replicated_bootstrapper} /opt/ptfe-installer/.
+tar  xzf /opt/ptfe-installer/${replicated_bootstrapper} -C /opt/ptfe-installer
+
+# Install PTFE
+cd /opt/ptfe-installer
+./install.sh \
+  airgap \
   no-proxy \
   private-address=$PRIVATE_IP\
   public-address=$PUBLIC_IP

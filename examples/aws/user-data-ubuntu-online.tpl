@@ -97,15 +97,9 @@ apt-get -y update
 apt-get install -y awscli
 aws configure set s3.signature_version s3v4
 
-# Get License File from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ubuntu/ptfe-license.rli
-
 # Set SELinux to permissive
 apt install -y selinux-utils
 setenforce 0
-
-# Disable ufw
-#ufw allow in on docker0
 
 # Install psql slcient for connecting to PostgreSQL
 apt-get install -y postgresql-client
@@ -120,6 +114,9 @@ EOF
 host=$(echo ${pg_netloc} | cut -d ":" -f 1)
 port=$(echo ${pg_netloc} | cut -d ":" -f 2)
 PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/ubuntu/create_schemas.sql
+
+# Get License File from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ubuntu/ptfe-license.rli
 
 # Install PTFE
 curl https://install.terraform.io/ptfe/stable > /home/ubuntu/install.sh

@@ -204,6 +204,14 @@ variable "containerd_package" {
   description = "S3 bucket object containing containerd"
 }
 
+variable "libltdl7_package" {
+  description = "S3 bucket object containing libltdl7"
+}
+
+variable "container_selinux_package" {
+  description = "S3 bucket object containing container-selinux"
+}
+
 variable "create_first_user_and_org" {
   # set to "true" for first install and "false" after that
   description = "whether to create the first site admin and org"

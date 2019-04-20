@@ -50,6 +50,8 @@ data "template_file" "user_data" {
     docker_package            = "${var.docker_package}"
     docker_cli_package        = "${var.docker_cli_package}"
     containerd_package        = "${var.containerd_package}"
+    libltdl7_package          = "${var.libltdl7_package}"
+    container_selinux_package = "${var.container_selinux_package}"
     create_first_user_and_org = "${var.create_first_user_and_org}"
     initial_admin_username    = "${var.initial_admin_username}"
     initial_admin_email       = "${var.initial_admin_email}"
