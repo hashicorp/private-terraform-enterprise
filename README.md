@@ -1,5 +1,5 @@
 # Automated Installation of PTFE with External Services in AWS
-This branch contains Terraform configurations that can do an [automated installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu or RHEL.
+This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu or RHEL. This can be done in using both the online and airgapped installation methods.
 
 ## Explanation of the Two Stage Deployment Model
 We deploy the AWS infrastructure and PTFE in two stages, each of which uses the open source flavor of Terraform:
@@ -10,10 +10,10 @@ Since we are creating an S3 bucket in each of the stages, to avoid confusion, we
 
 There are two reasons for splitting the deployment into two stages:
 1. The main reason is that some users are not allowed to provision their own VPC, subnets, and security groups. Splitting the deployment allows those users who are allowed to provision all required AWS resources to first deploy the network and security group resources and the PTFE source bucket from the [network](./examples/aws/network) directory, copy the IDs of the VPC, subnets, and security groups into a terraform.tfvars file in the [aws](./examples/aws) directory, and then deploy the rest of the resources.
-1. The second reason is that some users want to be able to "repave" their PTFE instances periodically, meaning that they will destroy the instances and recreate them (possibly with a new AMI). These users need to create the PTFE source bucket and then place the PTFE software, license file, and possibly settings files in it before they run the Terraform code in the second stage.
+1. The second reason is that some users want to be able to "repave" their PTFE instances periodically, meaning that they will destroy the instances and recreate them (possibly with a new AMI). These users need to create the PTFE source bucket and then place the PTFE software and license file in it before they run the Terraform code in the second stage.
 
 ## Description of the User Data Script that Installs PTFE
-During the second stage, a user data script generated from a template (either [user-data-ubuntu.tpl](./examples/aws/user-data-ubuntu.tpl) or [user-data-rhel.tpl](./examples/aws/user-data-rhel.tpl)) is run on each instance to install Docker and PTFE on it and to initialize the PostgreSQL database and S3 bucket if that has not already been done. Since the user data script is templated, all relevant PTFE settings, whether entered in the terraform.tfvars file or computed by Terraform, are passed into it before it is run when the instances are deployed.
+During the second stage, a user data script generated from one of four templates ([user-data-ubuntu-online.tpl](./examples/aws/user-data-ubuntu-online.tpl), [user-data-ubuntu-airgapped.tpl](./examples/aws/user-data-ubuntu-airgapped.tpl). [user-data-rhel-online.tpl](./examples/aws/user-data-rhel-online.tpl), or [user-data-rhel-airgapped.tpl](./examples/aws/user-data-rhel-airgapped.tpl)) is run on each instance to PTFE on it and to initialize the PostgreSQL database and S3 bucket if that has not already been done. The online scripts also install Docker. Since the user data script is templated, all relevant PTFE settings, whether entered in the terraform.tfvars file or computed by Terraform, are passed into it before it is run when the instances are deployed.
 
 The script does the following things:
 1. It determines the private IP, public IP, and private DNS of each EC2 instance being deployed to run PTFE.
@@ -30,6 +30,17 @@ At this point, different things happen depending on whether an online or airgapp
 In either case, the installer uses the replicated.conf, ptfe-settings.json, and ptfe-license.rli files that the script previously wrote to disk.
 
 The script then enters a loop, testing the availability of the PTFE app with a curl command. When that finishes, the script uses the TFE API to create the first site admin user, a TFE API token for this user, and the first organization. This leverages the [Initial Admin Creation Token](https://www.terraform.io/docs/enterprise/private/automating-initial-user.html) (IACT). At this point, the generated API token could be used to automate additional PTFE configuration.
+
+## Example tfvars Files
+There are three example tfvars files that you can use with the Terraform configurations in this branch:
+* [network.auto.tfvars.example](./examples/aws/network/network.auto.tfvars.example) for use in phase 1.
+* [ubuntu.auto.tfvars.example](./examples/aws/ubuntu.auto.tfvars.example) for use in phase 2 when deploying to Ubuntu.
+* [rhel.auto.tfvars.example](./examples/aws/rhel.auto.tfvars.example) for use in phase 2 when deploying to RHEL.
+
+The latter two files can be used with both online and airgapped installations. The various packages listed will be ignored when doing an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
+operational_mode to "online".  When doing an airgapped installation, set it to "airgapped".
+
+After doing an initial deployment, you should change create_first_user_and_org to "false" since the inital site admin user can only be created once.
 
 ## Prerequisites
 You need to have the following things before running the first stage Terraform code in the [network](./examples/aws/network) directory of this repository:
@@ -58,4 +69,5 @@ The Terraform code in this branch of this repository uses self-signed certs gene
 You can replace or "repave" the EC2 instance(s) running PTFE with Terraform at any time by following this process:
 1. Terminate the EC2 instance(s) in the AWS Console or taint them by running `terraform taint -module=pes aws_instance.primary` and/or `terraform taint -module=pes aws_instance.secondary`.
 1. Re-run `terraform apply`. This will cause the EC2 instance(s) to be destroyed and recreated. In addition, it will cause the aws_lb_target_group_attachment resources associated with the application load balancer to be destroyed and recreated; this ensures that the ALB will always point to the primary PTFE instance.
+
 When repaving instances, you should set the create_first_user_and_org variable to "false" since you will have already created the first site admin user and organization.
