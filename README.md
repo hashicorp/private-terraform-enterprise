@@ -1,5 +1,5 @@
 # Automated Installation of PTFE with External Services in AWS
-This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu or RHEL. This can be done in using both the online and airgapped installation methods.
+This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can currently be done in using the online installation method for all three operating systems and the airgapped installation method for Ubuntu and RHEL.
 
 ## Explanation of the Two Stage Deployment Model
 We deploy the AWS infrastructure and PTFE in two stages, each of which uses the open source flavor of Terraform:
@@ -13,14 +13,14 @@ There are two reasons for splitting the deployment into two stages:
 1. The second reason is that some users want to be able to "repave" their PTFE instances periodically, meaning that they will destroy the instances and recreate them (possibly with a new AMI). These users need to create the PTFE source bucket and then place the PTFE software and license file in it before they run the Terraform code in the second stage.
 
 ## Description of the User Data Script that Installs PTFE
-During the second stage, a user data script generated from one of four templates ([user-data-ubuntu-online.tpl](./examples/aws/user-data-ubuntu-online.tpl), [user-data-ubuntu-airgapped.tpl](./examples/aws/user-data-ubuntu-airgapped.tpl). [user-data-rhel-online.tpl](./examples/aws/user-data-rhel-online.tpl), or [user-data-rhel-airgapped.tpl](./examples/aws/user-data-rhel-airgapped.tpl)) is run on each instance to PTFE on it and to initialize the PostgreSQL database and S3 bucket if that has not already been done. The online scripts also install Docker. Since the user data script is templated, all relevant PTFE settings, whether entered in the terraform.tfvars file or computed by Terraform, are passed into it before it is run when the instances are deployed.
+During the second stage, a user data script generated from one of five templates ([user-data-ubuntu-online.tpl](./examples/aws/user-data-ubuntu-online.tpl), [user-data-ubuntu-airgapped.tpl](./examples/aws/user-data-ubuntu-airgapped.tpl). [user-data-rhel-online.tpl](./examples/aws/user-data-rhel-online.tpl), [user-data-rhel-airgapped.tpl](./examples/aws/user-data-rhel-airgapped.tpl), or [user-data-centos-online.tpl](./examples/aws/user-data-centos-online.tpl)) is run on each instance to PTFE on it and to initialize the PostgreSQL database and S3 bucket if that has not already been done. The online scripts also install Docker. Since the user data script is templated, all relevant PTFE settings, whether entered in the terraform.tfvars file or computed by Terraform, are passed into it before it is run when the instances are deployed.
 
 The script does the following things:
 1. It determines the private IP, public IP, and private DNS of each EC2 instance being deployed to run PTFE.
 1. It writes out the replicated.conf and ptfe-settings.json files.
 1. It installs the aws CLI.
 1. It uses the aws CLI to retrieve the PTFE license file from the PTFE source bucket.
-1. On Ubuntu, it sets SELinux to permissive mode. (This is not required on RHEL.)
+1. On Ubuntu and CentOS, it sets SELinux to permissive mode. (This is not required on RHEL.)
 1. It installs the psql utility, connects to the PostgreSQL database, and creates the three required schemas needed by PTFE.
 
 At this point, different things happen depending on whether an online or airgapped installation is being done.
@@ -32,12 +32,13 @@ In either case, the installer uses the replicated.conf, ptfe-settings.json, and 
 The script then enters a loop, testing the availability of the PTFE app with a curl command. When that finishes, the script uses the TFE API to create the first site admin user, a TFE API token for this user, and the first organization. This leverages the [Initial Admin Creation Token](https://www.terraform.io/docs/enterprise/private/automating-initial-user.html) (IACT). At this point, the generated API token could be used to automate additional PTFE configuration.
 
 ## Example tfvars Files
-There are three example tfvars files that you can use with the Terraform configurations in this branch:
+There are four example tfvars files that you can use with the Terraform configurations in this branch:
 * [network.auto.tfvars.example](./examples/aws/network/network.auto.tfvars.example) for use in phase 1.
 * [ubuntu.auto.tfvars.example](./examples/aws/ubuntu.auto.tfvars.example) for use in phase 2 when deploying to Ubuntu.
 * [rhel.auto.tfvars.example](./examples/aws/rhel.auto.tfvars.example) for use in phase 2 when deploying to RHEL.
+* [centos.auto.tfvars.example](./examples/aws/centos.auto.tfvars.example) for use in phase 2 when deploying to CentOS.
 
-The latter two files can be used with both online and airgapped installations. The various packages listed will be ignored when doing an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
+The second and third files can be used with both online and airgapped installations, but the fourth (for CentOS) can currently only be used for online installations. The various packages listed will be ignored when doing an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
 operational_mode to "online".  When doing an airgapped installation, set it to "airgapped".
 
 After doing an initial deployment, you should change create_first_user_and_org to "false" since the inital site admin user can only be created once.
@@ -54,7 +55,7 @@ You need to have the following things before running the second stage Terraform 
 * two subnets in that VPC like the ones provisioned in stage 1
 * a security group like the one provisioned in stage 1
 * an S3 bucket like the one provisioned in stage 1 (to be used as the PTFE source bucket)
-* An AWS AMI running a [supported flavor](https://www.terraform.io/docs/enterprise/private/preflight-installer.html#linux-instance) of Linux in the region in which you plan to deploy PTFE
+* An AWS AMI running a Ubuntu, RHEL, or CentOS in the region in which you plan to deploy PTFE
 * An AWS key pair that can be used to SSH to the EC2 instances that will be provisioned to run PTFE.
 * A certificate uploaded into or created within Amazon Certificate Manager (ACM) that can be attached to the application load balancer that will be provisioned in front of the EC2 instances.
 * An existing AWS Route 53 zone to host the Route 53 record set that will be provisioned.
