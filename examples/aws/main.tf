@@ -42,6 +42,8 @@ data "template_file" "user_data" {
     s3_sse_kms_key_id         = "${var.s3_sse_kms_key_id}"
     vault_path                = "${var.vault_path}"
     vault_store_snapshot      = "${var.vault_store_snapshot}"
+    tbw_image                 = "${var.tbw_image}"
+    custom_image_tag          = "${var.custom_image_tag}"
     source_bucket_name        = "${var.source_bucket_name}"
     ptfe_license              = "${var.ptfe_license}"
     operational_mode          = "${var.operational_mode}"

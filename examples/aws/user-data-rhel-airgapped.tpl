@@ -89,6 +89,12 @@ cat > /home/ec2-user/ptfe-settings.json <<EOF
   },
   "vault_store_snapshot": {
     "value": "${vault_store_snapshot}"
+  },
+  "custom_image_tag": {
+      "value": "${custom_image_tag}"
+  },
+  "tbw_image": {
+      "value": "${tbw_image}"
   }
 }
 EOF

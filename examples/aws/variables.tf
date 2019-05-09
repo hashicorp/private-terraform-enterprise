@@ -168,6 +168,15 @@ variable "vault_store_snapshot" {
   default = "1"
 }
 
+variable "tbw_image" {
+  description = "whether to use standard or custom Terraform worker image"
+  default = "default_image"
+}
+variable "custom_image_tag" {
+  description = "alternative Terraform worker image name and tag"
+  default "hashicorp/build-worker:now"
+}
+
 variable "source_bucket_name" {
   description = "Name of the S3 source bucket containing PTFE license file, airgap bundle, replicated tar file, and settings files"
 }
