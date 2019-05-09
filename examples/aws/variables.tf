@@ -170,7 +170,7 @@ variable "vault_store_snapshot" {
 
 variable "tbw_image" {
   description = "whether to use standard or custom Terraform worker image"
-  default = "default_image"
+  default = "default_image" # or "custom_image"
 }
 variable "custom_image_tag" {
   description = "alternative Terraform worker image name and tag"
