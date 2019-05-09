@@ -174,7 +174,7 @@ variable "tbw_image" {
 }
 variable "custom_image_tag" {
   description = "alternative Terraform worker image name and tag"
-  default "hashicorp/build-worker:now"
+  default = "hashicorp/build-worker:now"
 }
 
 variable "source_bucket_name" {
