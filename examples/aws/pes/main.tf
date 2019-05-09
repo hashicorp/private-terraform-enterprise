@@ -1,13 +1,8 @@
-#------------------------------------------------------------------------------
-# production external-services ptfe resources
-#------------------------------------------------------------------------------
+# PTFE Production External Services Module
 
-locals {
-  namespace = "${var.namespace}-pes"
-}
-
-resource "aws_instance" "pes" {
-  count                  = 2
+### EC2 instances
+resource "aws_instance" "primary" {
+  count                  = 1
   ami                    = "${var.aws_instance_ami}"
   instance_type          = "${var.aws_instance_type}"
   subnet_id              = "${element(var.subnet_ids, count.index)}"
@@ -22,59 +17,181 @@ resource "aws_instance" "pes" {
   }
 
   tags {
-    Name  = "${local.namespace}-instance-${count.index+1}"
+    Name  = "${var.namespace}-instance-1"
     owner = "${var.owner}"
     TTL   = "${var.ttl}"
   }
 }
 
-resource "aws_eip" "pes" {
-  instance = "${aws_instance.pes.0.id}"
-  vpc      = true
+resource "null_resource" "delay_secondary" {
+  provisioner "local-exec" {
+    command = "sleep 300"
+  }
+
+  depends_on = ["aws_instance.primary"]
 }
 
+resource "aws_instance" "secondary" {
+  count                  = 1
+  ami                    = "${var.aws_instance_ami}"
+  instance_type          = "${var.aws_instance_type}"
+  subnet_id              = "${element(var.subnet_ids, count.index)}"
+  vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
+  key_name               = "${var.ssh_key_name}"
+  user_data              = "${var.user_data}"
+  iam_instance_profile   = "${aws_iam_instance_profile.ptfe.name}"
+
+  root_block_device {
+    volume_size = 80
+    volume_type = "gp2"
+  }
+
+  tags {
+    Name  = "${var.namespace}-instance-2"
+    owner = "${var.owner}"
+    TTL   = "${var.ttl}"
+  }
+
+  depends_on = ["null_resource.delay_secondary"]
+}
+
+### Routing resources
+
 resource "aws_route53_record" "pes" {
-  zone_id = "${var.hashidemos_zone_id}"
-  name    = "${local.namespace}.hashidemos.io."
+  zone_id = "${var.zone_id}"
+  name    = "${var.hostname}"
   type    = "A"
-  ttl     = "300"
-  records = ["${aws_eip.pes.public_ip}"]
+
+  alias {
+    name    = "${aws_lb.ptfe.dns_name}"
+    zone_id = "${aws_lb.ptfe.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_lb" "ptfe" {
+  name               = "${var.namespace}-alb"
+  internal           = "${var.alb_internal}"
+  load_balancer_type = "application"
+  security_groups    = ["${var.vpc_security_group_ids}"]
+  subnets            = ["${var.subnet_ids}"]
+
+  tags {
+    owner = "${var.owner}"
+  }
+
+}
+
+resource "aws_lb_target_group" "ptfe_443" {
+  name               = "${var.namespace}-alb-tg-443"
+  port               = 443
+  protocol           = "HTTPS"
+  vpc_id             = "${var.vpc_id}"
+  target_type        = "instance"
+
+  health_check {
+    path      = "/app"
+    protocol  = "HTTPS"
+    matcher   = "200"
+  }
+
+  tags {
+    owner = "${var.owner}"
+  }
+}
+
+resource "aws_lb_target_group" "ptfe_8800" {
+  name               = "${var.namespace}-alb-tg-8800"
+  port               = 8800
+  protocol           = "HTTPS"
+  vpc_id             = "${var.vpc_id}"
+  target_type        = "instance"
+
+  health_check {
+  path      = "/"
+  protocol  = "HTTPS"
+  matcher   = "200"
+  }
+
+  tags {
+    owner = "${var.owner}"
+  }
+}
+
+resource "aws_lb_listener" "ptfe-443" {
+  load_balancer_arn   = "${aws_lb.ptfe.arn}"
+  port                = "443"
+  protocol            = "HTTPS"
+  ssl_policy          = "ELBSecurityPolicy-2016-08"
+  certificate_arn     = "${var.ssl_certificate_arn}"
+
+  default_action {
+    type              = "forward"
+    target_group_arn  = "${aws_lb_target_group.ptfe_443.arn}"
+  }
+
+}
+
+resource "aws_lb_listener" "ptfe-8800" {
+  load_balancer_arn   = "${aws_lb.ptfe.arn}"
+  port                = "8800"
+  protocol            = "HTTPS"
+  ssl_policy          = "ELBSecurityPolicy-2016-08"
+  certificate_arn     = "${var.ssl_certificate_arn}"
+
+  default_action {
+    type              = "forward"
+    target_group_arn  = "${aws_lb_target_group.ptfe_8800.arn}"
+  }
+
+}
+
+resource "aws_lb_target_group_attachment" "ptfe_443" {
+  target_group_arn    = "${aws_lb_target_group.ptfe_443.arn}"
+  target_id           = "${aws_instance.primary.id}"
+  port                = 443
+}
+
+resource "aws_lb_target_group_attachment" "ptfe_8800" {
+  target_group_arn    = "${aws_lb_target_group.ptfe_8800.arn}"
+  target_id           = "${aws_instance.primary.id}"
+  port                = 8800
+}
+
+### S3 bucket resorces
+
+data "aws_kms_key" "s3" {
+  key_id = "${var.kms_key_id}"
 }
 
 resource "aws_s3_bucket" "pes" {
-  bucket = "${local.namespace}-s3-bucket"
-  acl    = "private"
+  bucket        = "${var.ptfe_bucket_name}"
+  acl           = "private"
+  force_destroy = true
 
   versioning {
     enabled = true
   }
 
-  tags {
-    Name = "${local.namespace}-s3-bucket"
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = "${data.aws_kms_key.s3.arn}"
+        sse_algorithm     = "aws:kms"
+      }
+    }
   }
+
+  tags {
+    Name = "${var.ptfe_bucket_name}"
+  }
+
 }
 
-resource "aws_db_instance" "pes" {
-  allocated_storage         = 10
-  engine                    = "postgres"
-  engine_version            = "9.4"
-  instance_class            = "db.t2.medium"
-  identifier                = "${local.namespace}-db-instance"
-  name                      = "ptfe"
-  storage_type              = "gp2"
-  username                  = "ptfe"
-  password                  = "${var.database_pwd}"
-  db_subnet_group_name      = "${var.db_subnet_group_name}"
-  vpc_security_group_ids    = ["${var.vpc_security_group_ids}"]
-  final_snapshot_identifier = "${local.namespace}-db-instance-final-snapshot"
-}
-
-#------------------------------------------------------------------------------
-# iam for ec2 to s3
-#------------------------------------------------------------------------------
+# IAM resources
 
 resource "aws_iam_role" "ptfe" {
-  name = "${local.namespace}-iam_role"
+  name = "${var.namespace}-iam_role"
 
   assume_role_policy = <<EOF
 {
@@ -93,7 +210,7 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "ptfe" {
-  name = "${local.namespace}-iam_instance_profile"
+  name = "${var.namespace}-iam_instance_profile"
   role = "${aws_iam_role.ptfe.name}"
 }
 
@@ -105,16 +222,35 @@ data "aws_iam_policy_document" "ptfe" {
     resources = [
       "arn:aws:s3:::${aws_s3_bucket.pes.id}",
       "arn:aws:s3:::${aws_s3_bucket.pes.id}/*",
+      "arn:aws:s3:::${var.source_bucket_id}",
+      "arn:aws:s3:::${var.source_bucket_id}/*",
     ]
 
     actions = [
       "s3:*",
     ]
   }
+
+  statement {
+    sid    = "AllowKMS"
+    effect = "Allow"
+
+    resources = [
+      "${data.aws_kms_key.s3.arn}",
+    ]
+
+    actions = [
+      "kms:Decrypt",
+      "kms:Encrypt",
+      "kms:DescribeKey",
+      "kms:ReEncrypt*",
+      "kms:GenerateDataKey*",
+    ]
+  }
 }
 
 resource "aws_iam_role_policy" "ptfe" {
-  name   = "${local.namespace}-iam_role_policy"
+  name   = "${var.namespace}-iam_role_policy"
   role   = "${aws_iam_role.ptfe.name}"
   policy = "${data.aws_iam_policy_document.ptfe.json}"
 }

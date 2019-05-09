@@ -1,10 +1,14 @@
+terraform {
+  required_version = ">= 0.11.13"
+}
+
+provider "aws" {
+  region = "${var.aws_region}"
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
-
-#------------------------------------------------------------------------------
-# vpc / subnets / route tables / igw
-#------------------------------------------------------------------------------
 
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
@@ -19,7 +23,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = "${aws_vpc.main.id}"
 
   tags {
-    Name = "${var.namespace}-internet_gateway"
+    Name = "${var.namespace}-internet-gateway"
   }
 }
 
@@ -32,7 +36,7 @@ resource "aws_route_table" "main" {
   }
 
   tags {
-    Name = "${var.namespace}-route_table"
+    Name = "${var.namespace}-route-table"
   }
 }
 
@@ -49,21 +53,11 @@ resource "aws_subnet" "main" {
   map_public_ip_on_launch = true
 }
 
-resource "aws_db_subnet_group" "main" {
-  name_prefix = "${var.namespace}"
-  description = "${var.namespace}-db_subnet_group"
-  subnet_ids  = ["${aws_subnet.main.*.id}"]
-}
-
 resource "aws_route_table_association" "main" {
   count          = 2
   route_table_id = "${aws_route_table.main.id}"
   subnet_id      = "${element(aws_subnet.main.*.id, count.index)}"
 }
-
-#------------------------------------------------------------------------------
-# security groups
-#------------------------------------------------------------------------------
 
 resource "aws_security_group" "main" {
   name        = "${var.namespace}-sg"
