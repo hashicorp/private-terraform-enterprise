@@ -9,7 +9,3 @@ variable "namespace" {
 variable "bucket_name" {
    description = "Name of the PTFE source bucket to create"
 }
-
-variable "kms_key_arn" {
-   description = "ARN of the KMS key that encrypts the source bucket"
-}

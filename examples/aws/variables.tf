@@ -48,6 +48,7 @@ variable "alb_internal" {
 
 variable "owner" {
   description = "EC2 instance owner"
+  default = ""
 }
 
 variable "ttl" {
