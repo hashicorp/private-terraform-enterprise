@@ -33,7 +33,7 @@ The script then enters a loop, testing the availability of the PTFE app with a c
 
 ## Example tfvars Files
 There are four example tfvars files that you can use with the Terraform configurations in this branch:
-* [network.auto.tfvars.example](./examples/aws/network/network.auto.tfvars.example) for use in phase 1.
+* [network.auto.tfvars.example](./examples/aws/network/network.auto.tfvars.example) for use in stage 1.
 * [ubuntu.auto.tfvars.example](./examples/aws/ubuntu.auto.tfvars.example) for use in phase 2 when deploying to Ubuntu.
 * [rhel.auto.tfvars.example](./examples/aws/rhel.auto.tfvars.example) for use in phase 2 when deploying to RHEL.
 * [centos.auto.tfvars.example](./examples/aws/centos.auto.tfvars.example) for use in phase 2 when deploying to CentOS.
