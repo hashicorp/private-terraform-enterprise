@@ -9,3 +9,7 @@ output "subnet_ids" {
 output "security_group_id" {
   value = "${aws_security_group.main.id}"
 }
+
+output "kms_id" {
+  value = "${aws_kms_key.s3.key_id}"
+}
