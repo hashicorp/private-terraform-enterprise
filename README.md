@@ -41,9 +41,9 @@ There are four example tfvars files that you can use with the Terraform configur
 These files assume you are provisioning to the us-east-1 region. If you change this, make sure you select AMI IDs that exist in your region.
 
 The second and third files can be used with both online and airgapped installations, but the fourth (for CentOS) can currently only be used for online installations. The various packages listed will be ignored when doing an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
-operational_mode to "online".  When doing an airgapped installation, set it to "airgapped".
+`operational_mode` to "online".  When doing an airgapped installation, set it to "airgapped".
 
-After doing an initial deployment, you should change create_first_user_and_org to "false" since the inital site admin user can only be created once.
+After doing an initial deployment, you should change `create_first_user_and_org` to "false" since the inital site admin user can only be created once.
 
 ## Prerequisites
 You need to have an AWS account before running the first stage Terraform code in the [network](./examples/aws/network) directory of this repository.
@@ -83,7 +83,7 @@ If you want to use the Terraform code in the examples/aws/network directory to c
 1. Run `export AWS_DEFAULT_REGION=us-east-1` or pick some other region.  But if you select a different region, make sure you select AMIs from that region.
 1. Run `terraform init` to initialize the Stage 1 Terraform configuration and download providers.
 1. Run `terraform apply` to provision the Stage 1 resources. Type "yes" when prompted. The apply takes about 1 minute.
-1. Note the kms_id, security_group_id, subnet_ids, and vpc_id outputs which you will need in Stage 2.
+1. Note the `kms_id`, `security_group_id`, `subnet_ids`, and `vpc_id` outputs which you will need in Stage 2.
 1. Run `cd ..` to go back to the examples/aws directory.
 1. Add your PTFE license file to your PTFE source bucket that was created. You can do this in the AWS Console. If doing an airgapped installation, then add your airgap bundle, replicated.tar.gz, and docker packages to the bucket too. We suggest naming the various objects in your PTFE source bucket to match the values given in the tfvars.example files.
 
@@ -94,31 +94,31 @@ Follow these steps to provision the Stage 1 resources.
 1. If you skipped Stage 1, do steps 4-6 of that stage to export your AWS keys and default region.
 1. Copy one of the tfvars.example files to a file with the same name but without the "example" extension.
 1. Edit the "ptfe.<linux_flavor>.auto.tfvars" file where \<linux_flavor\> is the flavor of Linux you are using.
-    1. Set namespace to the same namespace you set in Stage 1.
-    1. Set source_bucket_name to the bucket_name you used in network.auto.tfvars.
-    1. Set vpc_id, subnet_ids, and security_group_id to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means.
-    1. Set s3_sse_kms_key_id to the kms_id output from Stage 1 or the ID of the KMS key you created using other means.
+    * Set `namespace` to the same namespace you set in Stage 1.
+    * Set `source_bucket_name` to the value of `bucket_name` you set in network.auto.tfvars.
+    * Set `vpc_id`, `subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means.
+    * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
 1. Set the rest of the variables in the file.
     * `ssh-keyname` will be the name of your SSH keypair as it is displayed in the AWS Console.
     * `ssl_certificate_arn` will be the full ARN of the certificate you uploaded into or created within Amazon Certificate Manager (ACM).
-    * `owner` and `ttl` are used within HashiCorp's own AWS account for resource reaping purposes. You can leave these blank.
+    * `owner` and `ttl` are used within HashiCorp's own AWS account for resource reaping purposes. You can leave these blank if you do not work at HashiCorp.
     * Set `ptfe_license` to the name of the object in your PTFE source bucket that contains your PTFE license.
     * Set the four password fields with suitable passwords.
     * Set `operational_mode` to "online" or "airgapped".
-    * See [PTFE Automated Installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) for guidance on the various PTFE settings that are passed into the replicated.conf and ptfe-settings.json files in the tpl files.
+    * See [PTFE Automated Installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) for guidance on the various PTFE settings that are passed into the replicated.conf and ptfe-settings.json files in the `*.tpl` files.
     * If doing an airgapped installation, set the `airgap_bundle`, `replicated_bootstrapper`, and docker package variables to the names of the corresponding items that you placed in your PTFE source bucket.
     * If doing an initial installation, make sure `create_first_user_and_org` is set to "true".
     * Set the `initial_admin_*` properties to desired values.
 1. Run `terraform init` to initialize the Stage 2 Terraform configuration and download providers.
 1. Run `terraform apply` to provision the Stage 2 resources. Type "yes" when prompted. The apply takes about 10-15 minutes.  Most of the time is spent creating the PostgreSQL database in RDS.
-1. After you see outputs for the apply, visit the AWS Console, find your "\<namespace\>-instance-1" instance.
+1. After you see outputs for the apply, visit the AWS Console, and find your "\<namespace\>-instance-1" instance.
 1. Click the Connect button and copy the SSH connection command.
 1. Type that command in a shell that contains your SSH private key from your AWS key pair and connect to your primary PTFE instance.
-1. You can now tail the install-ptfe.log with `tail -f install-ptfe.log`. Note that it is ok if you see multiple warnings in the log like "curl: (6) Could not resolve host: \<dns\>".  This just means that the script has run the installer and is currently testing the availability of the PTFE application with curl every 15 seconds. If this lasts for more than 5 minutes, then something is wrong.
+1. You can now tail the install-ptfe.log with `tail -f install-ptfe.log`. Note that it is ok if you see multiple warnings in the log like "curl: (6) Could not resolve host: \<ptfe_dns\>".  This just means that the script has run the installer and is currently testing the availability of the PTFE application with curl every 15 seconds. If this lasts for more than 5 minutes, then something is wrong.
 1. When the install-ptfe.log stops showing curl calls and instead shows output related to the creation of the initial admin user and organization, point a browser tab against `https://<ptfe_dns>`.
-1. Enter your username and your password and you start using your PTFE server.
+1. Enter your username and your password and start using your new PTFE server.
 
-**Note that you never need to visit the PTFE admin console at port 8800 when deploying with the process given on this branch of this repository.**
+**Note that you do not need to visit the PTFE admin console at port 8800 when deploying PTFE with the process given on this branch of this repository.**
 
 ## A Comment About Certs
 The Terraform code in this branch of this repository uses self-signed certs generated by PTFE on the EC2 instances but expects you to provide your own cert that can be deployed to the application load balancer which it provisions. Ideally, that would be a cert signed by a public certificate authority to better support integration with version control systems. It is possible to use a cert signed by a private certificate authority, but you then need to make sure that your VCS system (if using one of our [supported VCS integrations](https://www.terraform.io/docs/enterprise/vcs/index.html)) trusts that certificate authority.
