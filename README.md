@@ -118,6 +118,8 @@ Follow these steps to provision the Stage 1 resources.
 1. When the install-ptfe.log stops showing curl calls and instead shows output related to the creation of the initial admin user and organization, point a browser tab against `https://<ptfe_dns>`.
 1. Enter your username and your password and start using your new PTFE server.
 
+If you get any errors during the Stage 2 apply related to the creation of the EC2 instances or the ALB, you can try running `terraform apply` a second time.  Sometimes, AWS will give an error like "InvalidInstanceID.NotFound: The instance ID 'i-035b8268e714a911b' does not exist" when creating an EC2 instance even though it actually was created. If the second apply is successful, then the user-data script on the primary EC2 instance should be able to get out of the curl loop and create the initial site admin user and organization. 
+
 **Note that you do not need to visit the PTFE admin console at port 8800 when deploying PTFE with the process given on this branch of this repository.**
 
 ## A Comment About Certs
