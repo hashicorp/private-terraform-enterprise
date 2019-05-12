@@ -96,7 +96,7 @@ Follow these steps to provision the Stage 1 resources.
 1. Edit the "ptfe.<linux_flavor>.auto.tfvars" file where \<linux_flavor\> is the flavor of Linux you are using.
     * Set `namespace` to the same namespace you set in Stage 1.
     * Set `source_bucket_name` to the value of `bucket_name` you set in network.auto.tfvars.
-    * Set `vpc_id`, `subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means.
+    * Set `vpc_id`, `subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that subnet_ids should be given in the form "<subnet_1>, <subnet_2>".
     * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
 1. Set the rest of the variables in the file.
     * `ssh-keyname` will be the name of your SSH keypair as it is displayed in the AWS Console.
