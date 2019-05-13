@@ -64,13 +64,16 @@ data "template_file" "user_data" {
 }
 
 module "database" {
-  source                 = "database"
-  namespace              = "${var.namespace}"
-  subnet_ids             = ["${split(",", var.subnet_ids)}"]
-  vpc_security_group_ids = "${var.security_group_id}"
-  database_name          = "${var.pg_dbname}"
-  database_username      = "${var.pg_user}"
-  database_pwd           = "${var.pg_password}"
+  source                  = "database"
+  namespace               = "${var.namespace}"
+  subnet_ids              = ["${split(",", var.subnet_ids)}"]
+  vpc_security_group_ids  = "${var.security_group_id}"
+  database_name           = "${var.pg_dbname}"
+  database_username       = "${var.pg_user}"
+  database_pwd            = "${var.pg_password}"
+  database_storage        = "${var.database_storage}"
+  database_instance_class = "${var.database_instance_class}"
+  database_multi_az       = "${var.database_multi_az}"
 }
 
 module "pes" {

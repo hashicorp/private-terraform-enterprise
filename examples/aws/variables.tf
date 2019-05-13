@@ -15,6 +15,25 @@ variable "aws_instance_type" {
   description = "EC2 instance type"
 }
 
+variable "database_storage" {
+  # Use 10 for demo, 20 for POC, 50 for production
+  description = "allocated storage for RDS database"
+  default = "10"
+}
+
+variable "database_instance_class" {
+  # Use db.t2.medium for demo, db.m4.large for POC
+  # Use db.m4.large, db.m4.xlarge or db.m4.2xlarge for production
+  description = "instance class for RDS database"
+  default = "db.t2.medium"
+}
+
+variable "database_multi_az" {
+  # Use "false" for demo, "true" for POC or production
+  description = "boolean indicating whether to run multi-az RDS"
+  default = "false"
+}
+
 variable "create_second_instance" {
   # Set to 1 if you want a second PTFE instance, else 0
   description = "whether to create second PTFE instance"
