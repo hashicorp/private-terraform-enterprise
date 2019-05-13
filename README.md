@@ -64,7 +64,7 @@ You need to have the following things before running the second stage Terraform 
 * Access to a PTFE airgap bundle and replicated.tar.gz installer bootstrapper that you can upload to the PTFE source bucket (if doing an airgapped installation).
 * Access to Docker and packages it requires so that you can upload them to the PTFE source bucket (if doing an airgapped installation).
 
-You can also provide the ARN of a certificate that you uploaded into or created within Amazon Certificate Manager (ACM). This will be attached to the listeners created for the application load balancer that will be provisioned in front of the EC2 instances. The Stage 2 Terraform code actually creates an ACM certificate whether you provide one or not, but if you do provide your own, the generated one is associated with a fake domain consisting of "fake-" concatenated to your hostname. This is currently required with Terraform 0.11.x in order to make the generation of an ACM cert optional. This will not be needed with Terraform 0.12 which has an improved conditional operator.
+You can also provide the ARN of a certificate that you uploaded into or created within Amazon Certificate Manager (ACM). This will be attached to the listeners created for the application load balancer that will be provisioned in front of the EC2 instances. The Stage 2 Terraform code actually creates an ACM certificate whether you provide one or not, but if you do provide your own, the generated one is associated with a fake domain consisting of "fake-" concatenated to your hostname. If you set the `ssl_certificate_arn` variable to "", the generated ACM cert will be associated with your hostname. We generate an ACM cert even if you provide your own in order to make the generation of an ACM cert optional in Terraform 0.11. This will not be needed with Terraform 0.12.
 
 ## Installing PTFE
 Please follow these steps to deploy PTFE in your AWS account.
@@ -108,7 +108,7 @@ Follow these steps to provision the Stage 2 resources.
     * Set `database_multi_az` to the default "false" for demos, but set it to "true" for POCs and production.
     * Set `create_second_instance` to "1" if you want a second PTFE instance. Otherwise, leave it set to "0".
     * Set `ssh-keyname` to the name of your SSH keypair as it is displayed in the AWS Console.
-    * Set `ssl_certificate_arn` to the full ARN of the certificate you uploaded into or created within Amazon Certificate Manager (ACM), but if you want Terraform to create an ACM cert for you, set this to "".
+    * Set `ssl_certificate_arn` to the full ARN of the certificate you uploaded into or created within Amazon Certificate Manager (ACM), but if you want to use the ACM cert that Terraform will generate, set this to "".
     * `owner` and `ttl` are used within HashiCorp's own AWS account for resource reaping purposes. You can leave these blank if you do not work at HashiCorp.
     * Set `ptfe_license` to the name of the object in your PTFE source bucket that contains your PTFE license.
     * Set the four password fields with suitable passwords.
