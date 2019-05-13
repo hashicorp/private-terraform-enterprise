@@ -157,7 +157,7 @@ aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ubuntu/${airgap_bund
 aws s3 cp s3://${source_bucket_name}/${replicated_bootstrapper} /home/ubuntu/${replicated_bootstrapper}
 mkdir /opt/ptfe-installer
 cp /home/ubuntu/${replicated_bootstrapper} /opt/ptfe-installer/.
-tar  xzf /opt/ptfe-installer/${replicated_bootstrapper} -C /opt/ptfe-installer
+tar xzf /opt/ptfe-installer/${replicated_bootstrapper} -C /opt/ptfe-installer
 
 # Install PTFE
 cd /opt/ptfe-installer

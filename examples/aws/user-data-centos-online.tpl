@@ -110,7 +110,6 @@ aws configure set s3.signature_version s3v4
 aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/centos/ptfe-license.rli
 
 # Set SELinux to permissive
-apt install -y selinux-utils
 setenforce 0
 
 # Install psql client for connecting to PostgreSQL
