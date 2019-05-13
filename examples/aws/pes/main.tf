@@ -58,6 +58,30 @@ resource "aws_instance" "secondary" {
 
 ### Routing resources
 
+# Always create a certificate, but use fake domain if
+# var.ssl_certificate_arn not blank.
+# This is needed to enable conditional in listeners
+# Since conditionals in TF 0.11 evaluate both possibilities
+resource "aws_acm_certificate" "cert" {
+  domain_name       = "${var.ssl_certificate_arn == "" ? var.hostname : format("fake-%s", var.hostname)}"
+  validation_method = "DNS"
+}
+
+# This allows ACM to validate the new certificate
+resource "aws_route53_record" "cert_validation" {
+  name    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_name}"
+  type    = "${aws_acm_certificate.cert.domain_validation_options.0.resource_record_type}"
+  zone_id = "${var.zone_id}"
+  records = ["${aws_acm_certificate.cert.domain_validation_options.0.resource_record_value}"]
+  ttl     = 60
+}
+
+# This allows ACM to validate the new certificate
+resource "aws_acm_certificate_validation" "cert" {
+  certificate_arn         = "${aws_acm_certificate.cert.arn}"
+  validation_record_fqdns = ["${aws_route53_record.cert_validation.fqdn}"]
+}
+
 resource "aws_route53_record" "pes" {
   zone_id = "${var.zone_id}"
   name    = "${var.hostname}"
@@ -124,12 +148,14 @@ resource "aws_lb_listener" "ptfe-443" {
   port                = "443"
   protocol            = "HTTPS"
   ssl_policy          = "ELBSecurityPolicy-2016-08"
-  certificate_arn     = "${var.ssl_certificate_arn}"
+  certificate_arn     = "${var.ssl_certificate_arn == "" ? aws_acm_certificate.cert.arn : var.ssl_certificate_arn}"
 
   default_action {
     type              = "forward"
     target_group_arn  = "${aws_lb_target_group.ptfe_443.arn}"
   }
+
+  depends_on = ["aws_acm_certificate_validation.cert"]
 
 }
 
@@ -138,12 +164,14 @@ resource "aws_lb_listener" "ptfe-8800" {
   port                = "8800"
   protocol            = "HTTPS"
   ssl_policy          = "ELBSecurityPolicy-2016-08"
-  certificate_arn     = "${var.ssl_certificate_arn}"
+  certificate_arn     = "${var.ssl_certificate_arn == "" ? aws_acm_certificate.cert.arn : var.ssl_certificate_arn}"
 
   default_action {
     type              = "forward"
     target_group_arn  = "${aws_lb_target_group.ptfe_8800.arn}"
   }
+
+  depends_on = ["aws_acm_certificate_validation.cert"]
 
 }
 
