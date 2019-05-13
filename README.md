@@ -40,6 +40,8 @@ There are four example tfvars files that you can use with the Terraform configur
 
 These files assume you are provisioning to the us-east-1 region. If you change this, make sure you select AMI IDs that exist in your region.
 
+Be sure to adjust the aws_instance_type, database_storage, database_instance_class, and database_multi_az variables if deploying for a POC or in production. Also set create_second_instance to "1" if you want to provision a secondary PTFE instance in case the first one fails.
+
 The second and third files can be used with both online and airgapped installations, but the fourth (for CentOS) can currently only be used for online installations. The various packages listed will be ignored when doing an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
 `operational_mode` to "online".  When doing an airgapped installation, set it to "airgapped".
 

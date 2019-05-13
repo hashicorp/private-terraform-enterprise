@@ -9,7 +9,8 @@ database_storage = "10"
 # Use db.m4.large, db.m4.xlarge or db.m4.2xlarge for production
 database_instance_class = "db.t2.medium"
 # Use "false" for demo, "true" for POC and Production
-database_multi_az = "true"
+database_multi_az = "false"
+# Set to 1 if you want a second PTFE instance, else 0
 create_second_instance = "0"
 namespace = ""
 ssh_key_name = ""
