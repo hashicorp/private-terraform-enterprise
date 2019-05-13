@@ -24,6 +24,7 @@ resource "aws_instance" "primary" {
 }
 
 resource "null_resource" "delay_secondary" {
+  count = "${var.create_second_instance}"
   provisioner "local-exec" {
     command = "sleep 300"
   }
@@ -32,7 +33,7 @@ resource "null_resource" "delay_secondary" {
 }
 
 resource "aws_instance" "secondary" {
-  count                  = 1
+  count                  = "${var.create_second_instance}"
   ami                    = "${var.aws_instance_ami}"
   instance_type          = "${var.aws_instance_type}"
   subnet_id              = "${element(var.subnet_ids, count.index)}"

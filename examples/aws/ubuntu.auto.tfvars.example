@@ -1,6 +1,7 @@
 aws_region = "us-east-1"
 aws_instance_ami = "ami-0565af6e282977273"
 aws_instance_type = "m5.large"
+create_second_instance = "0"
 namespace = ""
 ssh_key_name = ""
 vpc_id = ""

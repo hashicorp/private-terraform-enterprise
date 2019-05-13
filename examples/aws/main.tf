@@ -92,4 +92,5 @@ module "pes" {
   ptfe_bucket_name       = "${var.s3_bucket}"
   kms_key_id             = "${var.s3_sse_kms_key_id}"
   source_bucket_id       = "${data.aws_s3_bucket.source.id}"
+  create_second_instance = "${var.create_second_instance}"
 }

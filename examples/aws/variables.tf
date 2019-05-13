@@ -15,6 +15,12 @@ variable "aws_instance_type" {
   description = "EC2 instance type"
 }
 
+variable "create_second_instance" {
+  # Set to 1 if you want a second PTFE instance, else 0
+  description = "whether to create second PTFE instance"
+  default = "0"
+}
+
 variable "namespace" {
   # Can have alphanumeric characters and hyphens.
   # Other characters might be ok but have not been tested

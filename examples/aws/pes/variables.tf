@@ -17,3 +17,4 @@ variable "ssl_certificate_arn" {}
 variable "ptfe_bucket_name" {}
 variable "kms_key_id" {}
 variable "source_bucket_id" {}
+variable "create_second_instance" {}
