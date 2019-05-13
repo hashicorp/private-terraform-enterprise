@@ -102,7 +102,7 @@ Follow these steps to provision the Stage 2 resources.
     * Set `vpc_id`, `subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that subnet_ids should be given in the form "<subnet_1>,<subnet_2>" with no space after the comma.
     * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
 1. Set the rest of the variables in the file.
-    * Set `aws_instance_type` to "m5.large" for demos and POCs, but set it to "m5.xlarge" or "m5.2xlarge" for production.
+    * Set `aws_instance_type` to "m5.large" for demos and POCs, but set it to "m5.large", "m5.xlarge" or "m5.2xlarge" for production.
     * Set `database_storage` to the default "10" for demos, "20" for POCs, and "50" for production.
     * Set `database_instance_class` to the default "db.t2.medium" for demos, "db.m4.large" for POCs, and "db.m4.large", "db.m4.xlarge" or "db.m4.2xlarge" for production.
     * Set `database_multi_az` to the default "false" for demos, but set it to "true" for POCs and production.
