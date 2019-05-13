@@ -4,7 +4,7 @@ This branch contains Terraform configurations that can do [automated installatio
 ## Explanation of the Two Stage Deployment Model
 We deploy the AWS infrastructure and PTFE in two stages, each of which uses the open source flavor of Terraform:
 1. We first deploy network and security group resources that the EC2 instances that run PTFE will run in along with a private S3 bucket to which the PTFE software, license, and settings files can be uploaded and a KMS key used to encrypt the bucket.
-1. We then deploy the external PostgreSQL database and S3 bucket used in the [Production - External Services](https://www.terraform.io/docs/enterprise/private/preflight-installer.html#operational-mode-decision) operational mode of PTFE along with the primary and secondary EC2 instances that will run PTFE, an Application Load Balancer and associated resources, and some required IAM resources.
+1. We then deploy the external PostgreSQL database and S3 bucket used in the [Production - External Services](https://www.terraform.io/docs/enterprise/private/preflight-installer.html#operational-mode-decision) operational mode of PTFE along with the primary and optional secondary EC2 instances that will run PTFE, an Application Load Balancer and associated resources, and some required IAM resources.
 
 Since we are creating an S3 bucket in each of the stages, to avoid confusion, we refer to the bucket created in the first stage as the "PTFE source bucket" and the bucket created in the second stage as the "PTFE runtime bucket".
 
@@ -99,6 +99,7 @@ Follow these steps to provision the Stage 1 resources.
     * Set `vpc_id`, `subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that subnet_ids should be given in the form "<subnet_1>,<subnet_2>" with no space after the comma.
     * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
 1. Set the rest of the variables in the file.
+    * Set `create_second_instance` to "1" if you want a second PTFE instance. Otherwise, leave it set to "0".
     * `ssh-keyname` will be the name of your SSH keypair as it is displayed in the AWS Console.
     * `ssl_certificate_arn` will be the full ARN of the certificate you uploaded into or created within Amazon Certificate Manager (ACM).
     * `owner` and `ttl` are used within HashiCorp's own AWS account for resource reaping purposes. You can leave these blank if you do not work at HashiCorp.
@@ -118,7 +119,7 @@ Follow these steps to provision the Stage 1 resources.
 1. When the install-ptfe.log stops showing curl calls and instead shows output related to the creation of the initial admin user and organization, point a browser tab against `https://<ptfe_dns>`.
 1. Enter your username and your password and start using your new PTFE server.
 
-If you get any errors during the Stage 2 apply related to the creation of the EC2 instances or the ALB, you can try running `terraform apply` a second time.  Sometimes, AWS will give an error like "InvalidInstanceID.NotFound: The instance ID 'i-035b8268e714a911b' does not exist" when creating an EC2 instance even though it actually was created. If the second apply is successful, then the user-data script on the primary EC2 instance should be able to get out of the curl loop and create the initial site admin user and organization. 
+If you get any errors during the Stage 2 apply related to the creation of the EC2 instances or the ALB, you can try running `terraform apply` a second time.  Sometimes, AWS will give an error like "InvalidInstanceID.NotFound: The instance ID 'i-035b8268e714a911b' does not exist" when creating an EC2 instance even though it actually was created. If the second apply is successful, then the user-data script on the primary EC2 instance should be able to get out of the curl loop and create the initial site admin user and organization.
 
 **Note that you do not need to visit the PTFE admin console at port 8800 when deploying PTFE with the process given on this branch of this repository.**
 
