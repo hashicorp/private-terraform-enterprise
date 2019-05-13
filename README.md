@@ -1,5 +1,5 @@
 # Automated Installation of PTFE with External Services in AWS
-This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can currently be done in using the online installation method for all three operating systems and the airgapped installation method for Ubuntu and RHEL.
+This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can be done using the online or airgapped installation method for all three operating systems.
 
 ## Explanation of the Two Stage Deployment Model
 We deploy the AWS infrastructure and PTFE in two stages, each of which uses the open source flavor of Terraform:
@@ -42,7 +42,7 @@ These files assume you are provisioning to the us-east-1 region. If you change t
 
 Be sure to adjust the aws_instance_type, database_storage, database_instance_class, and database_multi_az variables if deploying for a POC or in production. Also set create_second_instance to "1" if you want to provision a secondary PTFE instance in case the first one fails.
 
-The second and third files can be used with both online and airgapped installations, but the fourth (for CentOS) can currently only be used for online installations. The various packages listed will be ignored when doing an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
+The last three files can be used with both online and airgapped installations. The various packages listed will be ignored when doing an an online installation, but the variables must still be set to something.  You can use the current values or empty strings (""). When doing an online installation, be sure to set
 `operational_mode` to "online".  When doing an airgapped installation, set it to "airgapped".
 
 After doing an initial deployment, you should change `create_first_user_and_org` to "false" since the inital site admin user can only be created once.

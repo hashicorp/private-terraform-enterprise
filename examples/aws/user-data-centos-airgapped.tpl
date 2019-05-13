@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -x
-exec > /home/ec2-user/install-ptfe.log 2>&1
+exec > /home/centos/install-ptfe.log 2>&1
 
 # Get private and public IPs of the EC2 instance
 PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
@@ -14,15 +14,14 @@ cat > /etc/replicated.conf <<EOF
   "DaemonAuthenticationType": "password",
   "DaemonAuthenticationPassword": "${ptfe_admin_password}",
   "TlsBootstrapType": "self-signed",
-  "ImportSettingsFrom": "/home/ec2-user/ptfe-settings.json",
-  "LicenseFileLocation": "/home/ec2-user/ptfe-license.rli",
-  "LicenseBootstrapAirgapPackagePath": "/home/ec2-user/${airgap_bundle}",
+  "ImportSettingsFrom": "/home/centos/ptfe-settings.json",
+  "LicenseFileLocation": "/home/centos/ptfe-license.rli",
   "BypassPreflightChecks": false
 }
 EOF
 
 # Write out PTFE settings file
-cat > /home/ec2-user/ptfe-settings.json <<EOF
+cat > /home/centos/ptfe-settings.json <<EOF
 {
   "hostname": {
     "value": "${hostname}"
@@ -108,14 +107,17 @@ pip install awscli --upgrade --user
 aws configure set s3.signature_version s3v4
 
 # Get License File from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ec2-user/ptfe-license.rli
+aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/centos/ptfe-license.rli
+
+# Set SELinux to permissive
+setenforce 0
 
 # Install psql client for connecting to PostgreSQL
 yum install -y https://download.postgresql.org/pub/repos/yum/9.4/redhat/rhel-7-x86_64/pgdg-redhat94-9.4-3.noarch.rpm
 yum install -y postgresql94
 
 # Create the PTFE database schemas
-cat > /home/ec2-user/create_schemas.sql <<EOF
+cat > /home/centos/create_schemas.sql <<EOF
 CREATE SCHEMA IF NOT EXISTS rails;
 CREATE SCHEMA IF NOT EXISTS vault;
 CREATE SCHEMA IF NOT EXISTS registry;
@@ -123,49 +125,49 @@ EOF
 
 host=$(echo ${pg_netloc} | cut -d ":" -f 1)
 port=$(echo ${pg_netloc} | cut -d ":" -f 2)
-PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/ec2-user/create_schemas.sql
+PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/centos/create_schemas.sql
 
 # Download containerd Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/ec2-user/${containerd_package}
+aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/centos/${containerd_package}
 
 # Install containerd
-rpm -ivh /home/ec2-user/${containerd_package}
+rpm -ivh /home/centos/${containerd_package}
 
 # Download libltdl7 package
-aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/ec2-user/${libltdl7_package}
+aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/centos/${libltdl7_package}
 
 # Install libltdl7
 #apt-get install -y libltdl7
-rpm -ivh /home/ec2-user/${libltdl7_package}
+rpm -ivh /home/centos/${libltdl7_package}
 
 # Download Docker CLI Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/ec2-user/${docker_cli_package}
+aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/centos/${docker_cli_package}
 
 # Install Docker CLI
-rpm -ivh /home/ec2-user/${docker_cli_package}
+rpm -ivh /home/centos/${docker_cli_package}
 
 # Download container-selinux Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${container_selinux_package} /home/ec2-user/${container_selinux_package}
+aws s3 cp s3://${source_bucket_name}/${container_selinux_package} /home/centos/${container_selinux_package}
 
 # Install container-selinux package
-rpm -ivh /home/ec2-user/${container_selinux_package}
+rpm -ivh /home/centos/${container_selinux_package}
 
 # Download Docker Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ec2-user/${docker_package}
+aws s3 cp s3://${source_bucket_name}/${docker_package} /home/centos/${docker_package}
 
 # Install Docker
-rpm -ivh /home/ec2-user/${docker_package}
+rpm -ivh /home/centos/${docker_package}
 
 # Start Docker
 systemctl start docker
 
 # Download the Airgap bundle
-aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ec2-user/${airgap_bundle}
+aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/centos/${airgap_bundle}
 
 # Download and extract the Replicated Bootstrapper
-aws s3 cp s3://${source_bucket_name}/${replicated_bootstrapper} /home/ec2-user/${replicated_bootstrapper}
+aws s3 cp s3://${source_bucket_name}/${replicated_bootstrapper} /home/centos/${replicated_bootstrapper}
 mkdir /opt/ptfe-installer
-cp /home/ec2-user/${replicated_bootstrapper} /opt/ptfe-installer/.
+cp /home/centos/${replicated_bootstrapper} /opt/ptfe-installer/.
 tar xzf /opt/ptfe-installer/${replicated_bootstrapper} -C /opt/ptfe-installer
 
 # Install PTFE
@@ -176,9 +178,9 @@ cd /opt/ptfe-installer
   private-address=$PRIVATE_IP\
   public-address=$PUBLIC_IP
 
-# Allow ec2-user user to use docker
+# Allow centos user to use docker
 # This will not take effect until after you logout and back in
-usermod -aG docker ec2-user
+usermod -aG docker centos
 
 # Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
@@ -190,7 +192,7 @@ done
 if [ "${create_first_user_and_org}" == "true" ]
 then
   echo "Creating initial admin user and organization"
-  cat > /home/ec2-user/initialuser.json <<EOF
+  cat > /home/centos/initialuser.json <<EOF
 {
   "username": "${initial_admin_username}",
   "email": "${initial_admin_email}",
@@ -199,12 +201,12 @@ then
 EOF
 
   initial_token=$(replicated admin --tty=0 retrieve-iact)
-  iact_result=$(curl --header "Content-Type: application/json" --request POST --data @/home/ec2-user/initialuser.json "https://${hostname}/admin/initial-admin-user?token=$${initial_token}")
+  iact_result=$(curl --header "Content-Type: application/json" --request POST --data @/home/centos/initialuser.json "https://${hostname}/admin/initial-admin-user?token=$${initial_token}")
   api_token=$(echo $iact_result | python -c "import sys, json; print(json.load(sys.stdin)['token'])")
   echo "API Token of initial admin user is: $api_token"
 
   # Create first PTFE organization
-  cat > /home/ec2-user/initialorg.json <<EOF
+  cat > /home/centos/initialorg.json <<EOF
 {
   "data": {
     "type": "organizations",
@@ -216,7 +218,7 @@ EOF
 }
 EOF
 
-  org_result=$(curl  --header "Authorization: Bearer $api_token" --header "Content-Type: application/vnd.api+json" --request POST --data @/home/ec2-user/initialorg.json "https://${hostname}/api/v2/organizations")
+  org_result=$(curl  --header "Authorization: Bearer $api_token" --header "Content-Type: application/vnd.api+json" --request POST --data @/home/centos/initialorg.json "https://${hostname}/api/v2/organizations")
   org_id=$(echo $org_result | python -c "import sys, json; print(json.load(sys.stdin)['data']['id'])")
 
 fi
