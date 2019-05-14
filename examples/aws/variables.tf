@@ -15,6 +15,20 @@ variable "aws_instance_type" {
   description = "EC2 instance type"
 }
 
+variable "public_ip" {
+    description = "should ec2 instance have public ip?"
+    default = true
+}
+
+variable "alb_internal" {
+  description = "whether ALB is internal or not"
+  default = false
+}
+
+variable "route53_zone" {
+  description = "name of Route53 zone to use"
+}
+
 variable "database_storage" {
   # Use 10 for demo, 20 for POC, 50 for production
   description = "allocated storage for RDS database"
@@ -56,9 +70,15 @@ variable "vpc_id" {
 }
 
 # Please include at least 2 subnets from your VPC.
-variable "subnet_ids" {
+variable "ptfe_subnet_ids" {
   # Enter in form "subnet_1, subnet_2"
-  description = "Subnet IDs of subnets in VPC"
+  description = "Subnet IDs of subnets for EC2 instances in VPC"
+}
+
+# Please include at least 2 subnets from your VPC.
+variable "db_subnet_ids" {
+  # Enter in form "subnet_1, subnet_2"
+  description = "Subnet IDs of DB subnets in VPC"
 }
 
 variable "security_group_id" {
@@ -68,16 +88,6 @@ variable "security_group_id" {
 variable "ssl_certificate_arn" {
   # Full ARN of SSL cert
   description = "ARN of an SSL certificate uploaded to IAM or AWS Certificate Manager for use with PTFE ELB"
-}
-
-variable "route53_zone" {
-  description = "name of Route53 zone to use"
-  default = "hashidemos.io."
-}
-
-variable "alb_internal" {
-  description = "whether ALB is internal or not"
-  default = false
 }
 
 variable "owner" {

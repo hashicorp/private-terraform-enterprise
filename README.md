@@ -1,5 +1,5 @@
 # Automated Installation of PTFE with External Services in AWS
-This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can be done using the online or airgapped installation method for all three operating systems.
+This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can be done using the online or airgapped installation method for all three operating systems. It supports private and public subnets. In private subnets, the EC2 instances will only have private IPs and DNS addresses and Application Load Balancer will be internal.  In public subnets, the EC2 instances will have private and public IPs and DNS addresses and the Application Load Balancer will be external.
 
 ## Explanation of the Two Stage Deployment Model
 We deploy the AWS infrastructure and PTFE in two stages, each of which uses the open source flavor of Terraform:
@@ -53,7 +53,7 @@ You need to have an AWS account before running the first stage Terraform code in
 You need to have the following things before running the second stage Terraform code in the [aws](./examples/aws) directory of this repository:
 * an AWS account
 * a VPC like the one provisioned in stage 1
-* two subnets in that VPC like the ones provisioned in stage 1
+* two or four subnets in that VPC like the ones provisioned in stage 1 (You can just use the same two subnets for the EC2 instances and the PostgreSQL database or use separate subnets for the database.)
 * a security group like the one provisioned in stage 1
 * an S3 bucket like the one provisioned in stage 1 (to be used as the PTFE source bucket)
 * an AWS KMS key like the one provisioned in stage 1

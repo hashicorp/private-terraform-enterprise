@@ -1,7 +1,7 @@
 ### Database resources
 
 resource "aws_db_subnet_group" "ptfe" {
-  name_prefix = "${var.namespace}"
+  name_prefix = "${var.namespace}-db-zone"
   description = "${var.namespace}-db-subnet-group"
   subnet_ids  = ["${var.subnet_ids}"]
 }
