@@ -16,7 +16,8 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/centos/ptfe-settings.json",
   "LicenseFileLocation": "/home/centos/ptfe-license.rli",
-  "BypassPreflightChecks": false
+  "LicenseBootstrapAirgapPackagePath": "/home/centos/${airgap_bundle}",
+  "BypassPreflightChecks": true
 }
 EOF
 
@@ -98,24 +99,6 @@ cat > /home/centos/ptfe-settings.json <<EOF
 }
 EOF
 
-# Install aws CLI
-curl -O https://bootstrap.pypa.io/get-pip.py
-python get-pip.py --user
-echo "export PATH=/root/.local/bin:$PATH" >> /root/.bash_profile
-source /root/.bash_profile
-pip install awscli --upgrade --user
-aws configure set s3.signature_version s3v4
-
-# Get License File from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/centos/ptfe-license.rli
-
-# Set SELinux to permissive
-setenforce 0
-
-# Install psql client for connecting to PostgreSQL
-yum install -y https://download.postgresql.org/pub/repos/yum/9.4/redhat/rhel-7-x86_64/pgdg-redhat94-9.4-3.noarch.rpm
-yum install -y postgresql94
-
 # Create the PTFE database schemas
 cat > /home/centos/create_schemas.sql <<EOF
 CREATE SCHEMA IF NOT EXISTS rails;
@@ -127,39 +110,8 @@ host=$(echo ${pg_netloc} | cut -d ":" -f 1)
 port=$(echo ${pg_netloc} | cut -d ":" -f 2)
 PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/centos/create_schemas.sql
 
-# Download containerd Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/centos/${containerd_package}
-
-# Install containerd
-rpm -ivh /home/centos/${containerd_package}
-
-# Download libltdl7 package
-aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/centos/${libltdl7_package}
-
-# Install libltdl7
-#apt-get install -y libltdl7
-rpm -ivh /home/centos/${libltdl7_package}
-
-# Download Docker CLI Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/centos/${docker_cli_package}
-
-# Install Docker CLI
-rpm -ivh /home/centos/${docker_cli_package}
-
-# Download container-selinux Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${container_selinux_package} /home/centos/${container_selinux_package}
-
-# Install container-selinux package
-rpm -ivh /home/centos/${container_selinux_package}
-
-# Download Docker Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_package} /home/centos/${docker_package}
-
-# Install Docker
-rpm -ivh /home/centos/${docker_package}
-
-# Start Docker
-systemctl start docker
+# Get License File from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/centos/ptfe-license.rli
 
 # Download the Airgap bundle
 aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/centos/${airgap_bundle}
@@ -177,10 +129,6 @@ cd /opt/ptfe-installer
   no-proxy \
   private-address=$PRIVATE_IP\
   public-address=$PUBLIC_IP
-
-# Allow centos user to use docker
-# This will not take effect until after you logout and back in
-usermod -aG docker centos
 
 # Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do

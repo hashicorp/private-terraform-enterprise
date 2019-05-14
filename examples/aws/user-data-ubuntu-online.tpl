@@ -16,7 +16,7 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/ubuntu/ptfe-settings.json",
   "LicenseFileLocation": "/home/ubuntu/ptfe-license.rli",
-  "BypassPreflightChecks": false
+  "BypassPreflightChecks": true
 }
 EOF
 

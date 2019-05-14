@@ -17,7 +17,7 @@ cat > /etc/replicated.conf <<EOF
   "ImportSettingsFrom": "/home/ubuntu/ptfe-settings.json",
   "LicenseFileLocation": "/home/ubuntu/ptfe-license.rli",
   "LicenseBootstrapAirgapPackagePath": "/home/ubuntu/${airgap_bundle}",
-  "BypassPreflightChecks": false
+  "BypassPreflightChecks": true
 }
 EOF
 
@@ -149,6 +149,10 @@ aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ubuntu/${docker_pac
 
 # Install Docker
 DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${docker_package}
+
+# Start Docker and make it a service
+systemctl enable docker
+systemctl start docker
 
 # Download the Airgap bundle
 aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ubuntu/${airgap_bundle}
