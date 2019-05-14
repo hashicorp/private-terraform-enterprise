@@ -1,4 +1,6 @@
 aws_region = "us-east-1"
+# Use ami-02eac2c0129f6376b for online
+# Use ami-003969f560bcf23a2 for airgapped
 aws_instance_ami = "ami-02eac2c0129f6376b"
 # Use m5.large for POCs
 # Use m5.large, m5.xlarge or m5.2xlarge for production

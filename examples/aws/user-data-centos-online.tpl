@@ -16,7 +16,7 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "ImportSettingsFrom": "/home/centos/ptfe-settings.json",
   "LicenseFileLocation": "/home/centos/ptfe-license.rli",
-  "BypassPreflightChecks": false
+  "BypassPreflightChecks": true
 }
 EOF
 

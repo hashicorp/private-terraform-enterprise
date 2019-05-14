@@ -17,7 +17,7 @@ cat > /etc/replicated.conf <<EOF
   "ImportSettingsFrom": "/home/ec2-user/ptfe-settings.json",
   "LicenseFileLocation": "/home/ec2-user/ptfe-license.rli",
   "LicenseBootstrapAirgapPackagePath": "/home/ec2-user/${airgap_bundle}",
-  "BypassPreflightChecks": false
+  "BypassPreflightChecks": true
 }
 EOF
 
@@ -99,21 +99,6 @@ cat > /home/ec2-user/ptfe-settings.json <<EOF
 }
 EOF
 
-# Install aws CLI
-curl -O https://bootstrap.pypa.io/get-pip.py
-python get-pip.py --user
-echo "export PATH=/root/.local/bin:$PATH" >> /root/.bash_profile
-source /root/.bash_profile
-pip install awscli --upgrade --user
-aws configure set s3.signature_version s3v4
-
-# Get License File from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ec2-user/ptfe-license.rli
-
-# Install psql client for connecting to PostgreSQL
-yum install -y https://download.postgresql.org/pub/repos/yum/9.4/redhat/rhel-7-x86_64/pgdg-redhat94-9.4-3.noarch.rpm
-yum install -y postgresql94
-
 # Create the PTFE database schemas
 cat > /home/ec2-user/create_schemas.sql <<EOF
 CREATE SCHEMA IF NOT EXISTS rails;
@@ -125,39 +110,8 @@ host=$(echo ${pg_netloc} | cut -d ":" -f 1)
 port=$(echo ${pg_netloc} | cut -d ":" -f 2)
 PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/ec2-user/create_schemas.sql
 
-# Download containerd Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/ec2-user/${containerd_package}
-
-# Install containerd
-rpm -ivh /home/ec2-user/${containerd_package}
-
-# Download libltdl7 package
-aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/ec2-user/${libltdl7_package}
-
-# Install libltdl7
-#apt-get install -y libltdl7
-rpm -ivh /home/ec2-user/${libltdl7_package}
-
-# Download Docker CLI Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/ec2-user/${docker_cli_package}
-
-# Install Docker CLI
-rpm -ivh /home/ec2-user/${docker_cli_package}
-
-# Download container-selinux Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${container_selinux_package} /home/ec2-user/${container_selinux_package}
-
-# Install container-selinux package
-rpm -ivh /home/ec2-user/${container_selinux_package}
-
-# Download Docker Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ec2-user/${docker_package}
-
-# Install Docker
-rpm -ivh /home/ec2-user/${docker_package}
-
-# Start Docker
-systemctl start docker
+# Get License File from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ec2-user/ptfe-license.rli
 
 # Download the Airgap bundle
 aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ec2-user/${airgap_bundle}
@@ -175,10 +129,6 @@ cd /opt/ptfe-installer
   no-proxy \
   private-address=$PRIVATE_IP\
   public-address=$PUBLIC_IP
-
-# Allow ec2-user user to use docker
-# This will not take effect until after you logout and back in
-usermod -aG docker ec2-user
 
 # Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do

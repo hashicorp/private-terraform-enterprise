@@ -133,7 +133,7 @@ resource "aws_lb_target_group" "ptfe_8800" {
   target_type        = "instance"
 
   health_check {
-  path      = "/"
+  path      = "/_health_check"
   protocol  = "HTTPS"
   matcher   = "200"
   }
