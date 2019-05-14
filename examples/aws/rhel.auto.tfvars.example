@@ -5,6 +5,9 @@ aws_instance_ami = "ami-0d355a64b6e6b7bf9"
 # Use m5.large for POCs
 # Use m5.large, m5.xlarge or m5.2xlarge for production
 aws_instance_type = "m5.large"
+public_ip = "false"
+alb_internal= "true"
+route53_zone = ""
 # Use 10 for demo, 20 for POC, 50 for Production
 database_storage = "10"
 # Use db.t2.medium for demo, db.m4.large for POC
@@ -17,7 +20,8 @@ create_second_instance = "0"
 namespace = ""
 ssh_key_name = ""
 vpc_id = ""
-subnet_ids = "" # in format "subnet-1,subnet-2" (no space)
+ptfe_subnet_ids = "" # in format "subnet-1,subnet-2" (no space)
+db_subnet_ids = "" # in format "subnet-1,subnet-2" (no space)
 security_group_id = ""
 ssl_certificate_arn = ""
 owner = ""

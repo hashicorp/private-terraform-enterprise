@@ -5,6 +5,9 @@ aws_instance_ami = "ami-02eac2c0129f6376b"
 # Use m5.large for POCs
 # Use m5.large, m5.xlarge or m5.2xlarge for production
 aws_instance_type = "m5.large"
+public_ip = "false"
+alb_internal= "true"
+route53_zone = ""
 # Use 10 for demo, 20 for POC, 50 for Production
 database_storage = "10"
 # Use db.t2.medium for demo, db.m4.large for POC

@@ -6,7 +6,7 @@ exec > /home/centos/install-ptfe.log 2>&1
 # Get private and public IPs of the EC2 instance
 PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 PRIVATE_DNS=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
-PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+# PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
 
 # Write out replicated.conf configuration file
 cat > /etc/replicated.conf <<EOF
@@ -127,8 +127,8 @@ cd /opt/ptfe-installer
 ./install.sh \
   airgap \
   no-proxy \
-  private-address=$PRIVATE_IP\
-  public-address=$PUBLIC_IP
+  private-address=$PRIVATE_IP
+#  public-address=$PUBLIC_IP
 
 # Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do

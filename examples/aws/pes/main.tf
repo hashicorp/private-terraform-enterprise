@@ -10,6 +10,7 @@ resource "aws_instance" "primary" {
   key_name               = "${var.ssh_key_name}"
   user_data              = "${var.user_data}"
   iam_instance_profile   = "${aws_iam_instance_profile.ptfe.name}"
+  associate_public_ip_address = "${var.public_ip}"
 
   root_block_device {
     volume_size = 80
@@ -41,6 +42,7 @@ resource "aws_instance" "secondary" {
   key_name               = "${var.ssh_key_name}"
   user_data              = "${var.user_data}"
   iam_instance_profile   = "${aws_iam_instance_profile.ptfe.name}"
+  associate_public_ip_address = "${var.public_ip}"
 
   root_block_device {
     volume_size = 80

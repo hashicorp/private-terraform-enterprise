@@ -66,7 +66,7 @@ data "template_file" "user_data" {
 module "database" {
   source                  = "database"
   namespace               = "${var.namespace}"
-  subnet_ids              = ["${split(",", var.subnet_ids)}"]
+  subnet_ids              = ["${split(",", var.db_subnet_ids)}"]
   vpc_security_group_ids  = "${var.security_group_id}"
   database_name           = "${var.pg_dbname}"
   database_username       = "${var.pg_user}"
@@ -81,8 +81,9 @@ module "pes" {
   namespace              = "${var.namespace}"
   aws_instance_ami       = "${var.aws_instance_ami}"
   aws_instance_type      = "${var.aws_instance_type}"
+  public_ip              = "${var.public_ip}"
   vpc_id                 = "${var.vpc_id}"
-  subnet_ids             = ["${split(",", var.subnet_ids)}"]
+  subnet_ids             = ["${split(",", var.ptfe_subnet_ids)}"]
   vpc_security_group_ids = "${var.security_group_id}"
   user_data              = "${data.template_file.user_data.rendered}"
   ssh_key_name           = "${var.ssh_key_name}"
