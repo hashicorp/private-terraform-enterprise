@@ -6,7 +6,10 @@ exec > /home/ubuntu/install-ptfe.log 2>&1
 # Get private and public IPs of the EC2 instance
 PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 PRIVATE_DNS=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
-PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+
+if [ "${public_ip}" == "true" ]; then
+  PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+fi
 
 # Write out replicated.conf configuration file
 cat > /etc/replicated.conf <<EOF
@@ -99,21 +102,6 @@ cat > /home/ubuntu/ptfe-settings.json <<EOF
 }
 EOF
 
-# Install the aws CLI
-apt-get -y update
-apt-get install -y awscli
-aws configure set s3.signature_version s3v4
-
-# Get License File from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ubuntu/ptfe-license.rli
-
-# Set SELinux to permissive
-apt install -y selinux-utils
-setenforce 0
-
-# Install psql slcient for connecting to PostgreSQL
-apt-get install -y postgresql-client
-
 # Create the PTFE database schemas
 cat > /home/ubuntu/create_schemas.sql <<EOF
 CREATE SCHEMA IF NOT EXISTS rails;
@@ -125,34 +113,8 @@ host=$(echo ${pg_netloc} | cut -d ":" -f 1)
 port=$(echo ${pg_netloc} | cut -d ":" -f 2)
 PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -f /home/ubuntu/create_schemas.sql
 
-# Download containerd Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${containerd_package} /home/ubuntu/${containerd_package}
-
-# Install containerd
-DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${containerd_package}
-
-# Download libltdl7 package
-aws s3 cp s3://${source_bucket_name}/${libltdl7_package} /home/ubuntu/${libltdl7_package}
-
-# Install libltdl7
-#apt-get install -y libltdl7
-DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${libltdl7_package}
-
-# Download Docker CLI Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_cli_package} /home/ubuntu/${docker_cli_package}
-
-# Install Docker CLI
-DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${docker_cli_package}
-
-# Download Docker Package from S3 bucket
-aws s3 cp s3://${source_bucket_name}/${docker_package} /home/ubuntu/${docker_package}
-
-# Install Docker
-DEBIAN_FRONTEND=noninteractive dpkg --install /home/ubuntu/${docker_package}
-
-# Start Docker and make it a service
-systemctl enable docker
-systemctl start docker
+# Get License File from S3 bucket
+aws s3 cp s3://${source_bucket_name}/${ptfe_license} /home/ubuntu/ptfe-license.rli
 
 # Download the Airgap bundle
 aws s3 cp s3://${source_bucket_name}/${airgap_bundle} /home/ubuntu/${airgap_bundle}
@@ -165,15 +127,19 @@ tar xzf /opt/ptfe-installer/${replicated_bootstrapper} -C /opt/ptfe-installer
 
 # Install PTFE
 cd /opt/ptfe-installer
-./install.sh \
+if [ "${public_ip}" == "true" ]; then
+  ./install.sh \
   airgap \
   no-proxy \
-  private-address=$PRIVATE_IP\
+  private-address=$PRIVATE_IP \
   public-address=$PUBLIC_IP
-
-# Allow ubuntu user to use docker
-# This will not take effect until after you logout and back in
-usermod -aG docker ubuntu
+else
+  ./install.sh \
+  airgap \
+  no-proxy \
+  private-address=$PRIVATE_IP \
+  public-address=$PRIVATE_IP
+fi
 
 # Check status of install
 while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
