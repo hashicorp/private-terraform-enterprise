@@ -71,13 +71,21 @@ variable "vpc_id" {
 
 # Please include at least 2 subnets from your VPC.
 variable "ptfe_subnet_ids" {
-  # Enter in form "subnet_1, subnet_2"
+  # Enter in form "subnet_1,subnet_2"
   description = "Subnet IDs of subnets for EC2 instances in VPC"
 }
 
 # Please include at least 2 subnets from your VPC.
+# These can be the same as the ptfe_subnet_ids
 variable "db_subnet_ids" {
-  # Enter in form "subnet_1, subnet_2"
+  # Enter in form "subnet_1,subnet_2"
+  description = "Subnet IDs of DB subnets in VPC"
+}
+
+# Please include at least 2 public subnets from your VPC.
+# These can be the same as the ptfe_subnet_ids if public
+variable "alb_subnet_ids" {
+  # Enter in form "subnet_1,subnet_2"
   description = "Subnet IDs of DB subnets in VPC"
 }
 
@@ -266,36 +274,6 @@ variable "replicated_bootstrapper" {
   # the replicated bootstrapper (replicated.tar.gz)
   description = "S3 bucket object containing replicated bootstrapper replicated.tar.gz"
   default = ""
-}
-
-variable "docker_package" {
-  # Name of the S3 PTFE source bucket object containing
-  # the main docker package
-  description = "S3 bucket object containing Docker"
-}
-
-variable "docker_cli_package" {
-  # Name of the S3 PTFE source bucket object containing
-  # the docker CLI package
-  description = "S3 bucket object containing Docker CLI"
-}
-
-variable "containerd_package" {
-  # Name of the S3 PTFE source bucket object containing
-  # the containerd package used by Docker
-  description = "S3 bucket object containing containerd"
-}
-
-variable "libltdl7_package" {
-  # Name of the S3 PTFE source bucket object containing
-  # the libltdl7 package used by Docker
-  description = "S3 bucket object containing libltdl7"
-}
-
-variable "container_selinux_package" {
-  # Name of the S3 PTFE source bucket object containing
-  # the container_selinux package used by Docker
-  description = "S3 bucket object containing container-selinux"
 }
 
 variable "create_first_user_and_org" {

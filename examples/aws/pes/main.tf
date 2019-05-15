@@ -5,7 +5,7 @@ resource "aws_instance" "primary" {
   count                  = 1
   ami                    = "${var.aws_instance_ami}"
   instance_type          = "${var.aws_instance_type}"
-  subnet_id              = "${element(var.subnet_ids, count.index)}"
+  subnet_id              = "${element(var.ptfe_subnet_ids, count.index)}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   key_name               = "${var.ssh_key_name}"
   user_data              = "${var.user_data}"
@@ -37,7 +37,7 @@ resource "aws_instance" "secondary" {
   count                  = "${var.create_second_instance}"
   ami                    = "${var.aws_instance_ami}"
   instance_type          = "${var.aws_instance_type}"
-  subnet_id              = "${element(var.subnet_ids, count.index)}"
+  subnet_id              = "${element(var.ptfe_subnet_ids, count.index)}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   key_name               = "${var.ssh_key_name}"
   user_data              = "${var.user_data}"
@@ -101,7 +101,7 @@ resource "aws_lb" "ptfe" {
   internal           = "${var.alb_internal}"
   load_balancer_type = "application"
   security_groups    = ["${var.vpc_security_group_ids}"]
-  subnets            = ["${var.subnet_ids}"]
+  subnets            = ["${var.alb_subnet_ids}"]
 
   tags {
     owner = "${var.owner}"
@@ -117,7 +117,7 @@ resource "aws_lb_target_group" "ptfe_443" {
   target_type        = "instance"
 
   health_check {
-    path      = "/app"
+    path      = "/_health_check"
     protocol  = "HTTPS"
     matcher   = "200"
   }
@@ -135,7 +135,7 @@ resource "aws_lb_target_group" "ptfe_8800" {
   target_type        = "instance"
 
   health_check {
-  path      = "/_health_check"
+  path      = "/authenticate"
   protocol  = "HTTPS"
   matcher   = "200"
   }

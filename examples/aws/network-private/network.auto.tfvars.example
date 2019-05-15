@@ -1,0 +1,6 @@
+namespace = ""
+aws_region = "us-east-1"
+bucket_name = ""
+cidr_block = "10.0.0.0/16"
+subnet_count = "2"
+ssh_key_name = ""

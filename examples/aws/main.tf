@@ -8,6 +8,7 @@ provider "aws" {
 
 data "aws_route53_zone" "pes" {
   name = "${var.route53_zone}"
+  #private_zone = true for private zone
 }
 
 data "aws_s3_bucket" "source" {
@@ -20,6 +21,7 @@ data "template_file" "user_data" {
 
   vars {
     hostname                  = "${var.hostname}"
+    public_ip                 = "${var.public_ip}"
     ptfe_admin_password       = "${var.ptfe_admin_password}"
     ca_certs                  = "${var.ca_certs}"
     installation_type         = "${var.installation_type}"
@@ -49,11 +51,6 @@ data "template_file" "user_data" {
     operational_mode          = "${var.operational_mode}"
     airgap_bundle             = "${var.airgap_bundle}"
     replicated_bootstrapper   = "${var.replicated_bootstrapper}"
-    docker_package            = "${var.docker_package}"
-    docker_cli_package        = "${var.docker_cli_package}"
-    containerd_package        = "${var.containerd_package}"
-    libltdl7_package          = "${var.libltdl7_package}"
-    container_selinux_package = "${var.container_selinux_package}"
     create_first_user_and_org = "${var.create_first_user_and_org}"
     initial_admin_username    = "${var.initial_admin_username}"
     initial_admin_email       = "${var.initial_admin_email}"
@@ -83,7 +80,8 @@ module "pes" {
   aws_instance_type      = "${var.aws_instance_type}"
   public_ip              = "${var.public_ip}"
   vpc_id                 = "${var.vpc_id}"
-  subnet_ids             = ["${split(",", var.ptfe_subnet_ids)}"]
+  ptfe_subnet_ids             = ["${split(",", var.ptfe_subnet_ids)}"]
+  alb_subnet_ids             = ["${split(",", var.alb_subnet_ids)}"]
   vpc_security_group_ids = "${var.security_group_id}"
   user_data              = "${data.template_file.user_data.rendered}"
   ssh_key_name           = "${var.ssh_key_name}"
