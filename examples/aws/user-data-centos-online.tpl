@@ -6,7 +6,10 @@ exec > /home/centos/install-ptfe.log 2>&1
 # Get private and public IPs of the EC2 instance
 PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 PRIVATE_DNS=$(curl http://169.254.169.254/latest/meta-data/local-hostname)
-PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+
+if [ "${public_ip}" == "true" ]; then
+  PUBLIC_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+fi
 
 # Write out replicated.conf configuration file
 cat > /etc/replicated.conf <<EOF
@@ -129,18 +132,24 @@ PGPASSWORD=${pg_password} psql -h $host -p $port -d ${pg_dbname} -U ${pg_user} -
 
 # Install PTFE
 curl https://install.terraform.io/ptfe/stable > /home/centos/install.sh
-
-bash /home/centos/install.sh \
+if [ "${public_ip}" == "true" ]; then
+  bash /home/centos/install.sh \
+    no-proxy \
+    private-address=$PRIVATE_IP \
+    public-address=$PUBLIC_IP
+else
+  bash /home/centos/install.sh \
   no-proxy \
-  private-address=$PRIVATE_IP\
-  public-address=$PUBLIC_IP
+  private-address=$PRIVATE_IP \
+  public-address=$PRIVATE_IP
+fi
 
 # Allow centos user to use docker
 # This will not take effect until after you logout and back in
 usermod -aG docker centos
 
 # Check status of install
-while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
+while ! curl -ksfS --connect-timeout 5 https://$PRIVATE_IP/_health_check; do
     sleep 15
 done
 

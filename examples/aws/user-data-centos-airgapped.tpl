@@ -142,7 +142,7 @@ else
 fi
 
 # Check status of install
-while ! curl -ksfS --connect-timeout 5 https://${hostname}/_health_check; do
+while ! curl -ksfS --connect-timeout 5 https://$PRIVATE_IP/_health_check; do
     sleep 15
 done
 
