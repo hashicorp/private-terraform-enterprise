@@ -120,7 +120,7 @@ variable "linux" {
 ### Variables for user_data script that installs PTFE
 
 variable "ptfe_admin_password" {
-  # Any characters
+  # Any characters, at least 8 of them
   description = "password for PTFE admin console (at port 8800)"
 }
 
@@ -157,6 +157,7 @@ variable "capacity_memory" {
 }
 
 variable "enc_password" {
+  # Any characters, at least 8 of them
   description = "Set the encryption password for the install"
 }
 
@@ -188,7 +189,7 @@ variable "pg_password" {
 }
 
 variable "pg_user" {
-  # Can only contain alphanumeric characters
+  # Can only contain alphanumeric characters, at least 8 of them
   description = "Name of PostgreSQL database user"
   default = "ptfe"
 }
@@ -282,6 +283,7 @@ variable "create_first_user_and_org" {
 }
 
 variable "initial_admin_username" {
+  # alphanumeric, at least 8 characters
   description = "username of initial site admin user in PTFE"
 }
 
@@ -290,10 +292,12 @@ variable "initial_admin_email" {
 }
 
 variable "initial_admin_password" {
+  # any characters, at least 8 of them
   description = "username of initial site admin user in PTFE"
 }
 
 variable "initial_org_name" {
+  # alphanumeric and hyphens
   description = "name of initial organization in PTFE"
 }
 
