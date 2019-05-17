@@ -1,5 +1,5 @@
 stage 2# Automated Installation of PTFE with External Services in AWS
-This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can be done using the online or airgapped installation method for all three operating systems. It supports private and public networks. In private networks, the EC2 instances will only have private IPs and DNS addresses and the Application Load Balancer will be internal.  In public networks, the EC2 instances will have private and public IPs and DNS addresses and the Application Load Balancer will be external.
+This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can be done using the online or airgapped installation method for all three operating systems. It supports private and public networks.
 
 ## Explanation of the Two Stage Deployment Model
 We deploy the AWS infrastructure and PTFE in two stages, each of which uses the open source flavor of Terraform:
@@ -37,8 +37,8 @@ The script then enters a loop, testing the availability of the PTFE app with a c
 
 ## Example tfvars Files
 There are five example tfvars files that you can use with the Terraform configurations in this branch:
-* public [network.auto.tfvars.example](./examples/aws/network-public/network.auto.tfvars.example) for use in stage 1 when deploying a public network.
-* private [network.auto.tfvars.example](./examples/aws/network-private/network.auto.tfvars.example) for use in stage 1 when deploying a private network.
+* [public network.auto.tfvars.example](./examples/aws/network-public/network.auto.tfvars.example) for use in stage 1 when deploying a public network.
+* [private network.auto.tfvars.example](./examples/aws/network-private/network.auto.tfvars.example) for use in stage 1 when deploying a private network.
 * [ubuntu.auto.tfvars.example](./examples/aws/ubuntu.auto.tfvars.example) for use in phase 2 when deploying to Ubuntu.
 * [rhel.auto.tfvars.example](./examples/aws/rhel.auto.tfvars.example) for use in phase 2 when deploying to RHEL.
 * [centos.auto.tfvars.example](./examples/aws/centos.auto.tfvars.example) for use in phase 2 when deploying to CentOS.
@@ -57,7 +57,7 @@ You need to have an AWS account before running the first stage Terraform code in
 You need to have the following things before running the stage 2 Terraform code in the [aws](./examples/aws) directory of this repository:
 * an AWS account
 * a VPC like the one provisioned in stage 1
-* at least two subnets in that VPC like the ones provisioned in stage 1 (You can just use the same subnets for the EC2 instances, the PostgreSQL database, and the ALB or use separate subnets for these. But the subnets used for the ALB must be public.)
+* at least two subnets in that VPC like the ones provisioned in stage 1 (You can just use the same subnets for the EC2 instances, the PostgreSQL database, and the ALB or use separate subnets for these.) If you have more than two subnets, make sure that the two specified in the alb_subnet_ids variable include those containing the EC2 instances running PTFE.
 * a security group like the one provisioned in stage 1
 * an S3 bucket like the one provisioned in stage 1 (to be used as the PTFE source bucket)
 * an AWS KMS key like the one provisioned in stage 1
@@ -84,13 +84,13 @@ If you want to use the Terraform code in either the examples/aws/network-public 
 
 1. Run `cd examples/aws/network-public` or `cd examples/aws/network-private`to navigate to one of the network directories that contains the Stage 1 Terraform code.
 1. Run `cp network.auto.tfvars.example network.auto.tfvars` to create your own tfvars file.
-1. Edit network.auto.tfvars, set namespace to "<name>-ptfe" where "<name>" is some suitable prefix for your PTFE deployment, set `bucket_name` to the name of the PTFE source bucket you wish to create, set `cidr_block` to a valid CIDR block, and set `subnet_count` to the number of public subnets you want in your VPC. When creating a private network, the same number of private subnets will also be created. If creating a private network, also set `ssh_key_name` to the name of your SSH key pair so it can be used with the bastion host created in the private network. Finally, save the file.
+1. Edit network.auto.tfvars, set namespace to "<name>-ptfe" where "<name>" is some suitable prefix for your PTFE deployment, set `bucket_name` to the name of the PTFE source bucket you wish to create, set `cidr_block` to a valid CIDR block, and set `subnet_count` to the number of subnets you want in your VPC. When creating a public network, all of the subnets will be public. When creating a private network, that number of private subnets will be created along with one public subnet to allow outbound internet access. If creating a private network, also set `ssh_key_name` to the name of your SSH key pair so it can be used with the bastion host created in the private network. Finally, save the file.
 1. Run `export AWS_ACCESS_KEY_ID=<your_aws_key>`.
 1. Run `export AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>`.
 1. Run `export AWS_DEFAULT_REGION=us-east-1` or pick some other region.  But if you select a different region, make sure you select AMIs from that region.
 1. Run `terraform init` to initialize the Stage 1 Terraform configuration and download providers.
 1. Run `terraform apply` to provision the Stage 1 resources. Type "yes" when prompted. The apply takes about 1 minute.
-1. Note the `kms_id`, `security_group_id`, `subnet_ids`, and `vpc_id` outputs which you will need in Stage 2. (When creating a private network, you will have `private_subnet_ids` and `public_subnet_ids` outputs instead of the `subnet_ids` output.)
+1. Note the `kms_id`, `security_group_id`, `subnet_ids`, and `vpc_id` outputs which you will need in Stage 2. (When creating a private network, you will have `private_subnet_ids` and `public_subnet_id` outputs instead of the `subnet_ids` output.)
 1. Run `cd ..` to go back to the examples/aws directory.
 1. Add your PTFE license file to your PTFE source bucket that was created. You can do this in the AWS Console. If doing an airgapped installation, add your airgap bundle and replicated.tar.gz to the PTFE source bucket too. Name the various objects in your PTFE source bucket to match the values given in the your tfvars file, taking into account the version of your airgap bundle.  Avoid the use of spaces in the names of the PTFE license and installation files.
 
@@ -114,12 +114,12 @@ Follow these steps to provision the Stage 2 resources.
     * Set `database_multi_az` to the default "false" for demos, but set it to "true" for POCs and production.
     * Set `create_second_instance` to "1" if you want a second PTFE instance. Otherwise, leave it set to "0".
     * Set `ssh-keyname` to the name of your SSH keypair as it is displayed in the AWS Console.
-    * Set `ssl_certificate_arn` to the full ARN of the certificate you uploaded into or created within Amazon Certificate Manager (ACM), but if you want to use the ACM cert that Terraform will generate, set this to "".
+    * Set `ssl_certificate_arn` to the full ARN of the certificate you uploaded into or created within Amazon Certificate Manager (ACM), but if you want to use the ACM cert that Terraform will generate, set this to "" (blank).
     * `owner` and `ttl` are used within HashiCorp's own AWS account for resource reaping purposes. You can leave these blank if you do not work at HashiCorp.
     * Set `ptfe_license` to the name of the object in your PTFE source bucket that contains your PTFE license.
     * Set the four password fields with suitable passwords.
     * Set `operational_mode` to "online" or "airgapped".
-    * See [PTFE Automated Installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) for guidance on the various PTFE settings that are passed into the replicated.conf and ptfe-settings.json files in the `*.tpl` files.
+    * See [PTFE Automated Installation](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) for guidance on the various PTFE settings that are passed into the replicated.conf and ptfe-settings.json files in the `*.tpl` files. In particular, be sure to provide non-blank values for `hostname`, `enc_password`, `pg_dbname`, `pg_extra_params`, `pg_password`, `pg_user`, `s3_bucket`, `s3_region` (which would generally be the same as `aws_region`), `s3_sse_kms_key_id`, and `operational_mode`.
     * If doing an airgapped installation, set the `airgap_bundle`, and `replicated_bootstrapper` variables to the names of the corresponding items that you placed in your PTFE source bucket.
     * If doing an initial installation, make sure `create_first_user_and_org` is set to "true".
     * Set the `initial_admin_*` properties to desired values.
@@ -138,6 +138,9 @@ If you get any errors during the Stage 2 apply related to the creation of the EC
 
 ## A Comment About Certs
 The Terraform code in this branch of this repository uses self-signed certs generated by PTFE on the EC2 instances and an ACM certificate on the listeners associated with the Application Load Balancer that it creates. As mentioned above, you can provide your own cert or let the Terraform code generate one for you. If you provide your own cert, it would ideally be a cert signed by a public certificate authority to better support integration with version control systems. It is possible to use a cert signed by a private certificate authority, but you then need to make sure that your VCS system (if using one of our [supported VCS integrations](https://www.terraform.io/docs/enterprise/vcs/index.html)) trusts that certificate authority.
+
+## A Comment About Proxies
+While the code includes the `extra_no_proxy` variable and passes it into the generated ptfe-settings.json file through the template (`*.tpl`) files, it does not currently support proxies at this time since the commands used to run the PTFE installer include the `no-proxy` flag.  If you need to use a proxy server, you could change those install commands to use `http-proxy=<proxy_server>:<port>` instead of `no-proxy` and also add `additional-no-proxy=<comma-separated-list>` to list the addresses that should bypass the proxy in a comma-delimited list without any spaces. Also change the default value of `extra_no_proxy` to include those same addresses.
 
 ## Repaving Your PTFE Instances With Terraform
 You can replace or "repave" the EC2 instance(s) running PTFE with Terraform at any time by following this process:
