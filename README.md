@@ -1,4 +1,4 @@
-stage 2# Automated Installation of PTFE with External Services in AWS
+# Automated Installation of PTFE with External Services in AWS
 This branch contains Terraform configurations that can do [automated installations](https://www.terraform.io/docs/enterprise/private/automating-the-installer.html) of [Private Terraform Enterprise](https://www.terraform.io/docs/enterprise/private/index.html) (PTFE) in AWS using either Ubuntu, RHEL, or CentOS. This can be done using the online or airgapped installation method for all three operating systems. It supports private and public networks.
 
 ## Explanation of the Two Stage Deployment Model
@@ -43,7 +43,7 @@ There are five example tfvars files that you can use with the Terraform configur
 * [rhel.auto.tfvars.example](./examples/aws/rhel.auto.tfvars.example) for use in phase 2 when deploying to RHEL.
 * [centos.auto.tfvars.example](./examples/aws/centos.auto.tfvars.example) for use in phase 2 when deploying to CentOS.
 
-These files assume you are provisioning to the us-east-1 region. If you change this, make sure you select AMI IDs that exist in your region.
+These files assume you are provisioning to the us-east-1 region. If you change this, make sure you select AMI IDs that exist in your region. We have built Ubuntu, RHEL, and CentOS AMIs that have Docker, the aws CLI, and the psql client pre-installed; these are suitable for use with the airgapped installation option. However, while we were able to make the Ubuntu and RHEL AMIs public, we were not able to make the CentOS AMI public. See the tfvars files for the AMI IDs. 
 
 Be sure to adjust the aws_instance_type, database_storage, database_instance_class, and database_multi_az variables if deploying for a POC or in production. Also set create_second_instance to "1" if you want to provision a secondary PTFE instance in case the first one fails.
 
