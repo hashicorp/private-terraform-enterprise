@@ -94,3 +94,8 @@ resource "azurerm_network_security_rule" "allow_assistant" {
   destination_port_range      = "23010"
   priority                    = 150
 }
+
+resource "azurerm_subnet_network_security_group_association" "test" {
+  subnet_id                 = "${azurerm_subnet.new.id}"
+  network_security_group_id = "${azurerm_network_security_group.new.id}"
+}
