@@ -38,7 +38,7 @@ variable "key_vault_object_id" {
 }
 
 locals {
-  prefix               = "${element(coalescelist(list(var.prefix), random_pet.prefix.*.id), 0)}"
+  prefix               = "${element(coalescelist(random_pet.prefix.*.id, list(var.prefix)), 0)}"
   rendered_subnet_cidr = "${coalesce(var.subnet_address_space, var.address_space)}"
 
   default_tags = {
@@ -47,4 +47,11 @@ locals {
   }
 
   tags = "${merge(local.default_tags, var.additional_tags)}"
+}
+
+resource "random_pet" "prefix" {
+  count     = "${var.prefix == "" ? 1 : 0}"
+  prefix    = "tfe"
+  length    = 1
+  separator = "-"
 }
