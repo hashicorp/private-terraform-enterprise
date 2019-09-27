@@ -11,6 +11,7 @@ The only required inputs are a object-id and tenant-id to give access to the key
 |------|-------------|:----:|:-----:|:-----:|
 | key\_vault\_object\_id | The object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. | string | n/a | yes |
 | key\_vault\_tenant\_id | The Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. | string | n/a | yes |
+| application\_id | The application ID of the service principal for the vault. | string | n/a | yes |
 | additional\_tags | A map of additional tags to attach to all resources created. | map | `{}` | no |
 | address\_space | CIDR block range to use for the network. | string | `"10.0.0.0/16"` | no |
 | address\_space\_allowlist | CIDR block range to use to allow traffic from | string | `"*"` | no |
