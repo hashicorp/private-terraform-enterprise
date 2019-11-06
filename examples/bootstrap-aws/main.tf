@@ -8,7 +8,7 @@ resource "random_pet" "prefix" {
 module "new_vpc" {
   # 2.X.X versions of this module are for 0.12+ terraform
   source  = "terraform-aws-modules/vpc/aws"
-  version = "1.67.0"
+  version = "1.72.0"
 
   name                = "${local.prefix}-vpc"
   cidr                = "${var.cidr_block}"
