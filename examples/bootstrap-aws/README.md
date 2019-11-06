@@ -12,8 +12,8 @@ This will create a VPC with subnets, and can create a Route53 zone.
 | cidr\_block | CIDR block range to use for the network. | string | `"10.0.0.0/16"` | no |
 | domain\_name | The domain to create a route53 zone for. (eg. `tfe.example.com`), will not create if left empty. | string | `""` | no |
 | prefix | The prefix to use on all resources, will generate one if not set. | string | `""` | no |
-| private\_subnet\_cidr\_block | CIDR block range to use for the private subnet. | string | `"10.0.128.0/17"` | no |
-| public\_subnet\_cidr\_block | CIDR block range to use for the public subnet. | string | `"10.0.0.0/17"` | no |
+| private\_subnet\_cidr\_block | CIDR block range to use for the private subnet. | list| `["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]` | no |
+| public\_subnet\_cidr\_block | CIDR block range to use for the public subnet. | list | `["10.0.21.0/24", "10.0.22.0/24", "10.0.23.0/24"]` | no |
 
 ## Outputs
 

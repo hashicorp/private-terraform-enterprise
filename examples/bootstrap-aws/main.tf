@@ -13,8 +13,8 @@ module "new_vpc" {
   name                = "${local.prefix}-vpc"
   cidr                = "${var.cidr_block}"
   azs                 = ["${var.availability_zones}"]
-  private_subnets     = ["${var.private_subnet_cidr_block}"]
-  public_subnets      = ["${var.public_subnet_cidr_block}"]
+  private_subnets     = ["${var.private_subnet_cidr_blocks}"]
+  public_subnets      = ["${var.public_subnet_cidr_blocks}"]
   default_vpc_tags    = "${local.tags}"
   private_subnet_tags = "${local.tags}"
   public_subnet_tags  = "${local.tags}"
