@@ -13,7 +13,7 @@ resource "azurerm_key_vault" "new" {
 }
 
 # access policy for the ecurrent signed in user building the vault.
-resource "azurerm_key_vault_access_policy" "new-user" {
+resource "azurerm_key_vault_access_policy" "tf-user" {
   key_vault_id = "${azurerm_key_vault.new.id}"
   tenant_id = "${data.azurerm_client_config.current.tenant_id}"
   object_id = "${data.azurerm_client_config.current.service_principal_object_id}"
