@@ -24,7 +24,6 @@ The only required inputs are a object-id and tenant-id to give access to the key
 | Name | Description |
 |------|-------------|
 | key\_vault\_name |  |
-| key\_vault\_id |  |
 | resource\_group\_name |  |
 | subnet |  |
 | virtual\_network\_name |  |
