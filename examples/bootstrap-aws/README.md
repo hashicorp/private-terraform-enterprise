@@ -1,6 +1,6 @@
 # Terraform Enterprise: High Availability for AWS - Bootstrap Example
 
-This module preps your AWS accoutn for a clustered install.
+This module preps your AWS account for a clustered install.
 This will create a VPC with subnets, and can create a Route53 zone.
 
 ## Inputs
