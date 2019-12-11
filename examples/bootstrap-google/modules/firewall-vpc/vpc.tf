@@ -1,11 +1,11 @@
 resource "google_compute_network" "ptfe_vpc" {
-  name                    = "ptfevpc"
-  description             = "PTFE VPC Network"
+  name                    = "${var.vpc_name}"
+  description             = "TFE VPC Network"
   auto_create_subnetworks = false
 }
 
 resource "google_compute_subnetwork" "ptfe_subnet" {
-  name          = "ptfe-subnet"
+  name          = "${var.subnet_name}"
   ip_cidr_range = "${var.subnet_range}"
   region        = "${var.region}"
   network       = "${google_compute_network.ptfe_vpc.self_link}"

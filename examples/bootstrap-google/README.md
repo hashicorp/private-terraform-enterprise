@@ -1,12 +1,12 @@
-This module preps your gcp project for a v5 installs. This will create a vpc, subnet and firewall, as well as generate a certificate.
+This module prepares your GCP project for a v5 installation. This will create a VPC, subnet, firewall, and generate a certificate.
 
-## Pre-req
+## Prerequisites
 
 The only thing required to be previously conifgured is:
 
-- A DNS zone in gcp
-- A project
-- Valid credentials stored in json format
+- A GCP project
+- A DNS zone in the GCP project
+- Valid credentials for a service account stored in json format
 
 ## required variables
 
@@ -15,3 +15,11 @@ The only thing required to be previously conifgured is:
 - `domain` -- the domain to be used
 - `dnszone` -- the pre-configured dnszone
 
+## optional variables
+
+- `frontenddns` -- the prepended value to be added to your domain
+- `vpc_name` -- the name of the VPC to be created
+- `subnet_name` -- the name of the subnet to be created within the specified VPC
+- `subnet_range` -- the CIDR range to be allocated for the subnet
+- `primaryhostname` -- the hostname of the primary node(s)
+- `healthchk_ips` -- List of gcp health check ips to allow through the firewall (default value is suggested)
