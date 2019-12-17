@@ -1,0 +1,6 @@
+**/*.tfstate*
+**/.terraform*
+**/*.tfvars
+**/*.crt
+**/*.key
+**/*.rli
