@@ -57,7 +57,7 @@ You need to have an AWS account before running the first stage Terraform code in
 You need to have the following things before running the stage 2 Terraform code in the [aws](./examples/aws) directory of this repository:
 * an AWS account
 * a VPC like the one provisioned in stage 1
-* at least two subnets in that VPC like the ones provisioned in stage 1 (You can just use the same subnets for the EC2 instances, the PostgreSQL database, and the ALB or use separate subnets for these.)
+* at least two subnets in that VPC like the ones provisioned in stage 1 (You can just use the same subnets for the EC2 instances, the PostgreSQL database, and the ALB or use separate subnets for these, but the subnets used for the ALB and the EC2 instances need to be in the same pair of availability zones.)
 * a security group like the one provisioned in stage 1
 * an S3 bucket like the one provisioned in stage 1 (to be used as the PTFE source bucket)
 * an AWS KMS key like the one provisioned in stage 1
