@@ -34,7 +34,7 @@ resource "aws_eip" "ngw" {
 
 resource "aws_nat_gateway" "ngw" {
   allocation_id = "${aws_eip.ngw.id}"
-  subnet_id     = "${aws_subnet.public.id}"
+  subnet_id     = "${aws_subnet.public.0.id}"
 }
 
 resource "aws_vpc_endpoint" "s3" {
@@ -89,7 +89,8 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_subnet" "public" {
-  cidr_block = "${format("%s.%s.%d.%s/%d", local.address[0], local.address[1], var.subnet_count + 1, local.address[3], local.bits + (32 - local.bits) / 2)}"
+  count      = "${var.subnet_count}"
+  cidr_block = "${format("%s.%s.%d.%s/%d", local.address[0], local.address[1], var.subnet_count + count.index + 1, local.address[3], local.bits + (32 - local.bits) / 2)}"
   vpc_id            = "${aws_vpc.main.id}"
   availability_zone = "${element(data.aws_availability_zones.available.names, count.index % 2)}"
 
@@ -107,8 +108,9 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route_table_association" "public" {
+  count          = "${var.subnet_count}"
   route_table_id = "${aws_route_table.public.id}"
-  subnet_id      = "${aws_subnet.public.id}"
+  subnet_id      = "${element(aws_subnet.public.*.id, count.index)}"
 }
 
 resource "aws_security_group" "main" {
@@ -163,7 +165,7 @@ resource "aws_security_group" "main" {
 resource "aws_instance" "bastion" {
   ami                    = "ami-0565af6e282977273"
   instance_type          = "t2.micro"
-  subnet_id              = "${aws_subnet.public.id}"
+  subnet_id              = "${aws_subnet.public.0.id}"
   vpc_security_group_ids = ["${aws_security_group.main.id}"]
   key_name               = "${var.ssh_key_name}"
   associate_public_ip_address = "true"

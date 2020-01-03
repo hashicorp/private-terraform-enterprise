@@ -19,5 +19,8 @@ resource "aws_db_instance" "ptfe" {
   db_subnet_group_name      = "${aws_db_subnet_group.ptfe.id}"
   multi_az                  = "${var.database_multi_az}"
   vpc_security_group_ids    = ["${var.vpc_security_group_ids}"]
+  # If you are just testing or doing POC, uncomment line
+  # with skip_final_snapshot and comment out final_snapshot_identifier
+  #skip_final_snapshot       = "true"
   final_snapshot_identifier = "${var.namespace}-db-instance-final-snapshot"
 }

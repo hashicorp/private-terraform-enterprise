@@ -37,7 +37,7 @@ resource "aws_instance" "secondary" {
   count                  = "${var.create_second_instance}"
   ami                    = "${var.aws_instance_ami}"
   instance_type          = "${var.aws_instance_type}"
-  subnet_id              = "${element(var.ptfe_subnet_ids, count.index)}"
+  subnet_id              = "${element(var.ptfe_subnet_ids, count.index + 1)}"
   vpc_security_group_ids = ["${var.vpc_security_group_ids}"]
   key_name               = "${var.ssh_key_name}"
   user_data              = "${var.user_data}"

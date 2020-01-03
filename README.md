@@ -43,7 +43,7 @@ There are five example tfvars files that you can use with the Terraform configur
 * [rhel.auto.tfvars.example](./examples/aws/rhel.auto.tfvars.example) for use in phase 2 when deploying to RHEL.
 * [centos.auto.tfvars.example](./examples/aws/centos.auto.tfvars.example) for use in phase 2 when deploying to CentOS.
 
-These files assume you are provisioning to the us-east-1 region. If you change this, make sure you select AMI IDs that exist in your region. We have built Ubuntu, RHEL, and CentOS AMIs that have Docker, the aws CLI, and the psql client pre-installed; these are suitable for use with the airgapped installation option. However, while we were able to make the Ubuntu and RHEL AMIs public, we were not able to make the CentOS AMI public. See the tfvars files for the AMI IDs. 
+These files assume you are provisioning to the us-east-1 region. If you change this, make sure you select AMI IDs that exist in your region. We have built Ubuntu, RHEL, and CentOS AMIs that have Docker, the aws CLI, and the psql client pre-installed; these are suitable for use with the airgapped installation option. However, while we were able to make the Ubuntu and RHEL AMIs public, we were not able to make the CentOS AMI public. See the tfvars files for the AMI IDs.
 
 Be sure to adjust the aws_instance_type, database_storage, database_instance_class, and database_multi_az variables if deploying for a POC or in production. Also set create_second_instance to "1" if you want to provision a secondary PTFE instance in case the first one fails.
 
@@ -84,13 +84,13 @@ If you want to use the Terraform code in either the examples/aws/network-public 
 
 1. Run `cd examples/aws/network-public` or `cd examples/aws/network-private`to navigate to one of the network directories that contains the Stage 1 Terraform code.
 1. Run `cp network.auto.tfvars.example network.auto.tfvars` to create your own tfvars file.
-1. Edit network.auto.tfvars, set namespace to "<name>-ptfe" where "<name>" is some suitable prefix for your PTFE deployment, set `bucket_name` to the name of the PTFE source bucket you wish to create, set `cidr_block` to a valid CIDR block, and set `subnet_count` to the number of subnets you want in your VPC. When creating a public network, all of the subnets will be public. When creating a private network, that number of private subnets will be created along with one public subnet to allow outbound internet access. If creating a private network, also set `ssh_key_name` to the name of your SSH key pair so it can be used with the bastion host created in the private network. Finally, save the file.
+1. Edit network.auto.tfvars, set namespace to "<name>-ptfe" where "<name>" is some suitable prefix for your PTFE deployment, set `bucket_name` to the name of the PTFE source bucket you wish to create, set `cidr_block` to a valid CIDR block, and set `subnet_count` to the number of subnets you want in your VPC. When creating a public network, all of the subnets will be public. When creating a private network, that number of private subnets will be created along with two public subnets to allow outbound internet access and for use with the ALB. If creating a private network, also set `ssh_key_name` to the name of your SSH key pair so it can be used with the bastion host created in the private network. Finally, save the file.
 1. Run `export AWS_ACCESS_KEY_ID=<your_aws_key>`.
 1. Run `export AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>`.
 1. Run `export AWS_DEFAULT_REGION=us-east-1` or pick some other region.  But if you select a different region, make sure you select AMIs from that region.
 1. Run `terraform init` to initialize the Stage 1 Terraform configuration and download providers.
 1. Run `terraform apply` to provision the Stage 1 resources. Type "yes" when prompted. The apply takes about 1 minute.
-1. Note the `kms_id`, `security_group_id`, `subnet_ids`, and `vpc_id` outputs which you will need in Stage 2. (When creating a private network, you will have `private_subnet_ids` and `public_subnet_id` outputs instead of the `subnet_ids` output.)
+1. Note the `kms_id`, `security_group_id`, `subnet_ids`, and `vpc_id` outputs which you will need in Stage 2. (When creating a private network, you will have `private_subnet_ids` and `public_subnet_ids` outputs instead of the `subnet_ids` output.)
 1. Run `cd ..` to go back to the examples/aws directory.
 1. Add your PTFE license file to your PTFE source bucket that was created. You can do this in the AWS Console. If doing an airgapped installation, add your airgap bundle and replicated.tar.gz to the PTFE source bucket too. Name the various objects in your PTFE source bucket to match the values given in the your tfvars file, taking into account the version of your airgap bundle.  Avoid the use of spaces in the names of the PTFE license and installation files.
 
@@ -105,8 +105,8 @@ Follow these steps to provision the Stage 2 resources.
     * Set `source_bucket_name` to the value of `bucket_name` you set in network.auto.tfvars.
     * Set `vpc_id`, `ptfe_subnet_ids`, `db_subnet_ids`, `alb_subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that the `*_subnet_ids` should be given in the form "<subnet_1>,<subnet_2>" with no space after the comma. The ptfe and db subnets can be distinct or the same and can be public or private.  The alb subnets must be public.
     * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
-    * Set `public_ip` to "true" or "false" according to whether you want the EC2 instances to have public IPs or not.
-    * Set `alb_internal` to "true" or "false" according to whether you want the ALB to be internal or not.
+    * Set `public_ip` to "true" or "false" according to whether you want the EC2 instances to have public IPs or not. But only set to "false" when you have provisioned a private network that has a NAT Gateway that allows outbound access to the internet from your EC2 instance(s).
+    * Set `alb_internal` to "true" or "false" according to whether you want the ALB to be internal or not. But only set to "true" when you have provisioned a private network.
 1. Set the rest of the variables in the file.
     * Set `aws_instance_type` to "m5.large" for demos and POCs, but set it to "m5.large", "m5.xlarge" or "m5.2xlarge" for production.
     * Set `database_storage` to the default "10" for demos, "20" for POCs, and "50" for production.
