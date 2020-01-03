@@ -106,7 +106,7 @@ Follow these steps to provision the Stage 2 resources.
     * Set `vpc_id`, `ptfe_subnet_ids`, `db_subnet_ids`, `alb_subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that the `*_subnet_ids` should be given in the form "<subnet_1>,<subnet_2>" with no space after the comma. The ptfe and db subnets can be distinct or the same and can be public or private.  The alb subnets must be public.
     * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
     * Set `public_ip` to "true" or "false" according to whether you want the EC2 instances to have public IPs or not. But only set to "false" when you have provisioned a private network that has a NAT Gateway that allows outbound access to the internet from your EC2 instance(s).
-    * Set `alb_internal` to "true" or "false" according to whether you want the ALB to be internal or not. But only set to "true" when you have provisioned a private network.
+    * Set `alb_internal` to "true" or "false" according to whether you want the ALB to be internal or not. But only set to "true" when you have provisioned a private network and have clients that will be able to access an internal ALB.
 1. Set the rest of the variables in the file.
     * Set `aws_instance_type` to "m5.large" for demos and POCs, but set it to "m5.large", "m5.xlarge" or "m5.2xlarge" for production.
     * Set `database_storage` to the default "10" for demos, "20" for POCs, and "50" for production.
