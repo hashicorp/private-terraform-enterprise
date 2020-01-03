@@ -57,7 +57,7 @@ You need to have an AWS account before running the first stage Terraform code in
 You need to have the following things before running the stage 2 Terraform code in the [aws](./examples/aws) directory of this repository:
 * an AWS account
 * a VPC like the one provisioned in stage 1
-* at least two subnets in that VPC like the ones provisioned in stage 1 (You can just use the same subnets for the EC2 instances, the PostgreSQL database, and the ALB or use separate subnets for these.) If you have more than two subnets, make sure that the two specified in the alb_subnet_ids variable include those containing the EC2 instances running PTFE.
+* at least two subnets in that VPC like the ones provisioned in stage 1 (You can just use the same subnets for the EC2 instances, the PostgreSQL database, and the ALB or use separate subnets for these.)
 * a security group like the one provisioned in stage 1
 * an S3 bucket like the one provisioned in stage 1 (to be used as the PTFE source bucket)
 * an AWS KMS key like the one provisioned in stage 1
@@ -103,7 +103,7 @@ Follow these steps to provision the Stage 2 resources.
 1. Edit the "ptfe.<linux_flavor>.auto.tfvars" file where \<linux_flavor\> is the flavor of Linux you are using.
     * Set `namespace` to the same namespace you set in Stage 1.
     * Set `source_bucket_name` to the value of `bucket_name` you set in network.auto.tfvars.
-    * Set `vpc_id`, `ptfe_subnet_ids`, `db_subnet_ids`, `alb_subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that the `*_subnet_ids` should be given in the form "<subnet_1>,<subnet_2>" with no space after the comma. The ptfe and db subnets can be distinct or the same and can be public or private.  The alb subnets must be public.
+    * Set `vpc_id`, `ptfe_subnet_ids`, `db_subnet_ids`, `alb_subnet_ids`, and `security_group_id` to the corresponding outputs from Stage 1 or the IDs of the resources you created using other means. Note, however, that the `*_subnet_ids` should be given in the form "<subnet_1>,<subnet_2>" with no space after the comma. The ptfe and db subnets can be distinct or the same and can be public or private.  The alb subnets must be public for an internet-facing ALB.
     * Set `s3_sse_kms_key_id` to the `kms_id` output from Stage 1 or the ID of the KMS key you created using other means.
     * Set `public_ip` to "true" or "false" according to whether you want the EC2 instances to have public IPs or not. But only set to "false" when you have provisioned a private network that has a NAT Gateway that allows outbound access to the internet from your EC2 instance(s).
     * Set `alb_internal` to "true" or "false" according to whether you want the ALB to be internal or not. But only set to "true" when you have provisioned a private network and have clients that will be able to access an internal ALB.
