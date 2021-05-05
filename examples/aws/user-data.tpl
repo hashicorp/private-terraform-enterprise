@@ -8,7 +8,7 @@ cat > /etc/replicated.conf <<EOF
   "TlsBootstrapType": "self-signed",
   "LogLevel": "debug",
   "ImportSettingsFrom": "/tmp/replicated-settings.json",
-  "LicenseFileLocation": "/tmp/license.rli"
+  "LicenseFileLocation": "/tmp/license.rli",
   "BypassPreflightChecks": true
 }
 EOF
