@@ -9,7 +9,7 @@ cat > /etc/replicated.conf <<EOF
   "LogLevel": "debug",
   "ImportSettingsFrom": "/tmp/replicated-settings.json",
   "LicenseFileLocation": "/tmp/license.rli",
-  "BypassPreflightChecks": true
+  "BypassPreflightChecks": true,
 }
 EOF
 cat > /tmp/replicated-settings.json <<EOF
