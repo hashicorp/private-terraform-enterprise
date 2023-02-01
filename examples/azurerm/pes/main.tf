@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 locals {
   namespace         = "${var.namespace}-pes"
   main_namespace    = "${local.namespace}-main"

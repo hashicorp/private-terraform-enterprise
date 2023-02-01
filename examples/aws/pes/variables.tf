@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 variable "namespace" {}
 variable "aws_instance_ami" {}
 variable "aws_instance_type" {}

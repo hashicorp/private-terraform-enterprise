@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 # The vSphere server hostname or IP to connect to. Example: "vsphere.customer.com"
 vsphere_server = ""
 

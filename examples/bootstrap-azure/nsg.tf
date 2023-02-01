@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 resource "azurerm_network_security_group" "new" {
   name                = "${local.prefix}-nsg"
   resource_group_name = "${azurerm_resource_group.new.name}"

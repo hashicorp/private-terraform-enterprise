@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 # read in current AzureRM client config so we can give it some permissions wrt the Keyvault.
 data "azurerm_client_config" "current" {}
 

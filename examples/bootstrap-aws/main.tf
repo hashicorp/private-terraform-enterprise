@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 resource "random_pet" "prefix" {
   count     = "${var.prefix != "" ? 0 : 1}"
   prefix    = "tfe"

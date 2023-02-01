@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 output "vpc_id" {
   value       = "${module.new_vpc.vpc_id}"
   description = "The id of the created VPC"
