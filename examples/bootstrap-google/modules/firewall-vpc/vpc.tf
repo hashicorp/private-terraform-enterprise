@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 resource "google_compute_network" "ptfe_vpc" {
   name                    = "ptfevpc"
   description             = "PTFE VPC Network"

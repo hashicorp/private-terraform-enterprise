@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 locals {
   main_namespace    = "${var.namespace}-main"
   standby_namespace = "${var.namespace}-standby"

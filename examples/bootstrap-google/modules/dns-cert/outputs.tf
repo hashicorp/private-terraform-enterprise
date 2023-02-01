@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 output "frontend_ip" {
   value = "${google_compute_global_address.frontend_ip.address}"
 }

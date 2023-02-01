@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 output "main_rg_name" {
   value = "${module.network.main_rg_name}"
 }

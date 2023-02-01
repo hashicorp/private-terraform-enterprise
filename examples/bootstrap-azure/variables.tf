@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 variable "prefix" {
   description = "The prefix to use on all resources, will generate one if not set."
   default     = ""

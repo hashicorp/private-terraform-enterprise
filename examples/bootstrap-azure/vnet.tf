@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 resource "azurerm_resource_group" "new" {
   name     = "${local.prefix}-rg"
   location = "${var.location}"

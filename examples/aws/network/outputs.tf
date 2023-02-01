@@ -1,3 +1,6 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: MPL-2.0
+
 output "subnet_ids" {
   value = "${aws_subnet.main.*.id}"
 }
