@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 resource "random_pet" "prefix" {
   count     = "${var.prefix != "" ? 0 : 1}"
   prefix    = "tfe"

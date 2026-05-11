@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 module "firewall" {
   source = "modules/firewall-vpc"
   region = "${var.region}"

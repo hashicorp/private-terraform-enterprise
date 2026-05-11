@@ -1,4 +1,6 @@
 #!/bin/sh
+# Copyright IBM Corp. 2018, 2026
+
 
 curl -o install.sh https://install.terraform.io/ptfe/stable
 

@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 locals {
   namespace         = "${var.namespace}-pes"
   main_namespace    = "${local.namespace}-main"

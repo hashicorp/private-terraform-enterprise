@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 output "resource_group_name" {
   value = "${azurerm_resource_group.new.name}"
 }

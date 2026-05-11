@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 resource "azurerm_network_security_group" "new" {
   name                = "${local.prefix}-nsg"
   resource_group_name = "${azurerm_resource_group.new.name}"

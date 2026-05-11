@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 output "main_rg_name" {
   value = "${module.network.main_rg_name}"
 }

@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 output "subnet_ids" {
   value = "${aws_subnet.main.*.id}"
 }

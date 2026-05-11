@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "namespace" {
   description = "Unique name to use for resource naming"
 }

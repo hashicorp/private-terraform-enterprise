@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 output "vpc_id" {
   value       = "${module.new_vpc.vpc_id}"
   description = "The id of the created VPC"

@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 locals {
   main_namespace    = "${var.namespace}-main"
   standby_namespace = "${var.namespace}-standby"

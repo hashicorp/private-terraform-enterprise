@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "domain" {
   type        = "string"
   description = "Domain name for PTFE server"

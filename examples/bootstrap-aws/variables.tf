@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "cidr_block" {
   description = "CIDR block range to use for the network."
   default     = "10.0.0.0/16"
