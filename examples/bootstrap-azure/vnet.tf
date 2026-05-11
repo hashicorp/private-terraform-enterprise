@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 resource "azurerm_resource_group" "new" {
   name     = "${local.prefix}-rg"
   location = "${var.location}"

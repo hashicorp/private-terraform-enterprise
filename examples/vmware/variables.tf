@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "vsphere_user" {}
 variable "vsphere_password" {}
 variable "vsphere_server" {}

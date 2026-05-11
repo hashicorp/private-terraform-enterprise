@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 output "vpc" {
   value = "${google_compute_network.ptfe_vpc.name}"
 }

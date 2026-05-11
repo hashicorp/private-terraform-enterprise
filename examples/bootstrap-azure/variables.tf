@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "prefix" {
   description = "The prefix to use on all resources, will generate one if not set."
   default     = ""

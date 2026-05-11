@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 resource "google_compute_network" "ptfe_vpc" {
   name                    = "ptfevpc"
   description             = "PTFE VPC Network"

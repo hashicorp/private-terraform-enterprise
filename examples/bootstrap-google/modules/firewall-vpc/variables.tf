@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "region" {
   type        = "string"
   description = "The region to install into."

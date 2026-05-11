@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 resource "google_compute_firewall" "ptfe" {
   name    = "ptfe-firewall"
   network = "${google_compute_network.ptfe_vpc.name}"

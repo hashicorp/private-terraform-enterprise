@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 output "main_public_ip" {
   value = "${azurerm_public_ip.main.ip_address}"
 }

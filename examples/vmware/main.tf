@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 provider "vsphere" {
   user                 = "${var.vsphere_user}"
   password             = "${var.vsphere_password}"

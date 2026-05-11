@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 # The vSphere server hostname or IP to connect to. Example: "vsphere.customer.com"
 vsphere_server = ""
 

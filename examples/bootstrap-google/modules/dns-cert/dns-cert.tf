@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 data "google_dns_managed_zone" "dnszone" {
   name     = "${var.dnszone}"
 }

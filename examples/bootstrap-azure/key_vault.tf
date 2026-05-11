@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 # read in current AzureRM client config so we can give it some permissions wrt the Keyvault.
 data "azurerm_client_config" "current" {}
 

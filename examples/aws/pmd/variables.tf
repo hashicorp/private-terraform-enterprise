@@ -1,3 +1,5 @@
+# Copyright IBM Corp. 2018, 2026
+
 variable "namespace" {}
 variable "aws_instance_ami" {}
 variable "aws_instance_type" {}
